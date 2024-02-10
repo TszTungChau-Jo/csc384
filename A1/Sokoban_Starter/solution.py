@@ -255,7 +255,7 @@ def heur_alternate(state):
         # Calculate distance to the nearest available (unused) storage point
         min_distance, chosen_storage = priority_distance_exclude(box_position, state.storage, used_storage)
         if chosen_storage is not None:  # Ensure a storage was found and not all were excluded
-            alt_val += min_distance - random.uniform(0, 0.69)
+            alt_val += min_distance #- random.uniform(0, 0.69)
             used_storage.append(chosen_storage)  # Mark this storage as used
 
     return alt_val
