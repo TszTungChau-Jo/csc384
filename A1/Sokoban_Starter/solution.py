@@ -319,15 +319,9 @@ def weighted_astar(initial_state, heur_fn, weight, timebound):
     se = SearchEngine('custom', 'full')
     wrapped_fval_function = (lambda sN: fval_function(sN, weight))
     se.init_search(initial_state, sokoban_goal_state, heur_fn, wrapped_fval_function)
+    final, stats = se.search(timebound)
 
-    # set timebound
-    timer_limit = os.times()[0] + timebound
-
-    # search
-    best_cost = math.inf
-    
-
-    return None, None  # CHANGE THIS
+    return final, stats  # CHANGE THIS
 
 # SEARCH ALGORITHMS
 def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
