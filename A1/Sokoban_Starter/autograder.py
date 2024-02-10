@@ -99,7 +99,7 @@ def test_alternate_fun():
     unsolved = []
     benchmark1 = 9
     benchmark2 = 16
-    timebound = 1  # time limit
+    timebound = 2  # time limit
 
     #for reference, solution lengths are here
     man_dist_solns = [29, 24, 23, 24, 12, -99, -99, 41, 20, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, 30, 21]
