@@ -476,7 +476,7 @@ class SearchEngine:
                     # exceeded time bound, must terminate search
                     print("TRACE: Search has exceeeded the time bound provided.")
                     print("\ncounter: ", counter)
-                    node.state.print_state()
+                    #node.state.print_state()
                     return False
                     #return node.state
             #if counter % 1000 == 0:
@@ -484,12 +484,12 @@ class SearchEngine:
             #    print(f"Heuristic: {heur_fn(node.state)}")
             #    print(counter)
 
-            if counter == 40000:
-                node.state.print_state()
-                print(f"P Heuristic: {heur_fn(node.state)}")
-                for obj in node.state.successors():
-                    obj.print_state()
-                    print(f"S Heuristic: {heur_fn(obj)}")
+            #if counter == 40000:
+                #node.state.print_state()
+                #print(f"P Heuristic: {heur_fn(node.state)}")
+                #for obj in node.state.successors():
+                    #obj.print_state()
+                    #print(f"S Heuristic: {heur_fn(obj)}")
             # All states reached by a search node on OPEN have already
             # been hashed into the self.cc_dictionary. However,
             # before expanding a node we might have already expanded
