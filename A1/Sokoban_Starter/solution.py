@@ -158,23 +158,21 @@ def is_stuck(obj, state):
     
     return (blocking_left and blocking_right and blocking_up and blocking_down)
 
-def check_adjacent_boxes_on_edge(box, state):
-    # Check vertical adjacency (one box directly above the other)
-    vertical_adjacent = (box[0], box[1] + 1)
-    if vertical_adjacent in state.boxes:
-        # If both boxes are at the top or bottom edge, it's a deadlock
-        if box[1] == 0 or vertical_adjacent[1] == state.height - 1:
-            return True
-    
-    # Check horizontal adjacency (one box directly beside the other)
-    horizontal_adjacent = (box[0] + 1, box[1])
-    if horizontal_adjacent in state.boxes:
-        # If both boxes are at the left or right edge, it's a deadlock
-        if box[0] == 0 or horizontal_adjacent[0] == state.width - 1:
-            return True
+def check_adjacent_boxes_against_wall(box, state):
+    # Vertical adjacency check (box directly above or below)
+    # Ensure both boxes are along the top or bottom edge and not at storage
+    if box[1] == 0 or box[1] == state.height - 1:
+        if ((box[0] + 1, box[1]) in state.boxes or (box[0] - 1, box[1]) in state.boxes):
+            if not (box in state.storage or (box[0], box[1] + 1) in state.storage or (box[0], box[1] - 1) in state.storage):
+                return True  # Adjacent boxes against a horizontal wall not at storage detected
 
-    return False
-
+    # Horizontal adjacency check (box directly to the left or right)
+    # Ensure both boxes are along the left or right edge and not at storage
+    if box[0] == 0 or box[0] == state.width - 1:
+        if ((box[0], box[1] + 1) in state.boxes or (box[0], box[1] - 1) in state.boxes):
+            if not (box in state.storage or (box[0] + 1, box[1]) in state.storage or (box[0] - 1, box[1]) in state.storage):
+                return True  # Adjacent boxes against a vertical wall not at storage detected
+    return False  # No such configuration found
 
 #--------------------------------------------------------------
 
@@ -229,11 +227,17 @@ def heur_alternate(state):
             return math.inf
 
         # Check for paths blocked by other boxes
-        for storage_position in state.storage:
-            if is_direct_path_blocked(box_position, storage_position, state.boxes):
-                alt_val += penalty_per_blocked_box
-                #print_sokoban_state_attributes(state)
-                break  # No need to check other storages if one path is already found to be blocked
+        #for storage_position in state.storage:
+        #    if is_direct_path_blocked(box_position, storage_position, state.boxes):
+        #        alt_val += penalty_per_blocked_box
+        #        #print_sokoban_state_attributes(state)
+        #        break  # No need to check other storages if one path is already found to be blocked
+        
+        # check for 2x1 stuck
+        if check_adjacent_boxes_against_wall(box_position, state):
+            print("STK works")
+            print(state.state_string())
+            return math.inf
         
         # Apply tunnel/narrow path penalty
         if is_in_tunnel_or_narrow_path_cached(box_position, state.obstacles):
