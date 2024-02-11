@@ -67,17 +67,6 @@ def storage_on_edge(box_position, state): # box already on edge
             return True
     return False
 
-
-def priority_distance(object, sets):
-    distances = []
-    for things in sets:
-        distance = manhattan_distance(object, things)
-        # Push the distance and the box position as a tuple
-        heapq.heappush(distances, (distance, things))
-    # Pop the smallest distance
-    min_distance, _ = heapq.heappop(distances)
-    return min_distance
-
 def is_direct_path_blocked(box, storage, boxes):
     # Simplified check for a direct path blockage
     if box[0] == storage[0]:  # Same column
@@ -123,6 +112,17 @@ def is_in_tunnel_or_narrow_path_cached(box, obstacles):
 
     return is_tunnel
 
+def priority_distance(object, sets):
+    distances = []
+    for things in sets:
+        distance = manhattan_distance(object, things)
+        # Push the distance and the box position as a tuple
+        heapq.heappush(distances, (distance, things))
+    # Pop the smallest distance
+    min_distance, _ = heapq.heappop(distances)
+    return min_distance
+
+
 def priority_distance_exclude(object, storage_points, exclude):
     distances = []
     for storage_position in storage_points:
@@ -158,6 +158,23 @@ def is_stuck(obj, state):
     
     return (blocking_left and blocking_right and blocking_up and blocking_down)
 
+def check_adjacent_boxes_on_edge(box, state):
+    # Check vertical adjacency (one box directly above the other)
+    vertical_adjacent = (box[0], box[1] + 1)
+    if vertical_adjacent in state.boxes:
+        # If both boxes are at the top or bottom edge, it's a deadlock
+        if box[1] == 0 or vertical_adjacent[1] == state.height - 1:
+            return True
+    
+    # Check horizontal adjacency (one box directly beside the other)
+    horizontal_adjacent = (box[0] + 1, box[1])
+    if horizontal_adjacent in state.boxes:
+        # If both boxes are at the left or right edge, it's a deadlock
+        if box[0] == 0 or horizontal_adjacent[0] == state.width - 1:
+            return True
+
+    return False
+
 def check_adjacent_boxes_against_wall(box, state):
     # Vertical adjacency check (box directly above or below)
     # Ensure both boxes are along the top or bottom edge and not at storage
@@ -172,7 +189,11 @@ def check_adjacent_boxes_against_wall(box, state):
         if ((box[0], box[1] + 1) in state.boxes or (box[0], box[1] - 1) in state.boxes):
             if not (box in state.storage or (box[0] + 1, box[1]) in state.storage or (box[0] - 1, box[1]) in state.storage):
                 return True  # Adjacent boxes against a vertical wall not at storage detected
+            
+    
+
     return False  # No such configuration found
+
 
 #--------------------------------------------------------------
 
@@ -189,15 +210,18 @@ def heur_alternate(state):
     # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     # Your function should return a numeric value for the estimate of the distance to the goal.
     # EXPLAIN YOUR HEURISTIC IN THE COMMENTS. Please leave this function (and your explanation) at the top of your solution file, to facilitate marking.
+    
     """
     Better heuristic:
         1. check for deadlocks
             1.1 corner deadlocks: 4 corner positions -> ostacles on 2 adjacent sides
             1.2 wall(edge) deadlocks: along the edge of a wall wil no storage point
+            1.3 2x2 box deadlock
         2. updates the Manhattan distance heuristic by (robot(s) to boxes) and (boxes to storage)   
             2.1 robot(s) to box(es)
             2.2 box(es) to storage(s)
     """
+    
     # variables
     num_robot = len(state.robots)
 
@@ -225,6 +249,12 @@ def heur_alternate(state):
             #print("SQR works")
             #print_sokoban_state_attributes(state)
             return math.inf
+        
+        # check for 2x1 stuck
+        if check_adjacent_boxes_against_wall(box_position, state):
+            #print("STK works")
+            #print(state.state_string())
+            return math.inf
 
         # Check for paths blocked by other boxes
         #for storage_position in state.storage:
@@ -233,24 +263,12 @@ def heur_alternate(state):
         #        #print_sokoban_state_attributes(state)
         #        break  # No need to check other storages if one path is already found to be blocked
         
-        # check for 2x1 stuck
-        if check_adjacent_boxes_against_wall(box_position, state):
-            print("STK works")
-            print(state.state_string())
-            return math.inf
-        
         # Apply tunnel/narrow path penalty
         if is_in_tunnel_or_narrow_path_cached(box_position, state.obstacles):
             alt_val += tunnel_penalty
 
     # each (available) robot(s) to its nearest box position
     for robot_position in state.robots:
-        # Check if the robot is stuck and apply penalty
-        #if is_stuck(robot_position, state):
-        #    print("STK works")
-        #    print_sokoban_state_attributes(state)
-        #    return math.inf
-
         min_distance = priority_distance(robot_position, state.boxes)
         alt_val += (min_distance) / num_robot # account for multiple robots
 
@@ -259,7 +277,7 @@ def heur_alternate(state):
         # Calculate distance to the nearest available (unused) storage point
         min_distance, chosen_storage = priority_distance_exclude(box_position, state.storage, used_storage)
         if chosen_storage is not None:  # Ensure a storage was found and not all were excluded
-            alt_val += min_distance #- random.uniform(0, 0.69)
+            alt_val += min_distance - random.uniform(0, 0.69)
             used_storage.append(chosen_storage)  # Mark this storage as used
 
     return alt_val
@@ -289,7 +307,7 @@ def heur_manhattan_distance(state):
         # add the minimum distance to the total distance
         total_distance += min_distance
 
-    print_sokoban_state_attributes(state)
+    #print_sokoban_state_attributes(state)
     return total_distance  # CHANGE THIS
 
 def heur_zero(state):
@@ -327,17 +345,6 @@ def weighted_astar(initial_state, heur_fn, weight, timebound):
 
     return final, stats  # CHANGE THIS
 
-# SEARCH ALGORITHMS
-def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
-    # IMPLEMENT 5th
-    '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
-    '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
-    '''OUTPUT: A goal state (if a goal is found), else False'''
-    '''implementation of iterative gbfs algorithm'''
-    
-    
-    return None, None #CHANGE THIS
-
 def iterative_astar(initial_state, heur_fn, weight=1, timebound=5):  # uses f(n), see how autograder initializes a search line 88
     # IMPLEMENT 
     '''Provides an implementation of realtime a-star, as described in the HW1 handout'''
@@ -369,3 +376,16 @@ def iterative_astar(initial_state, heur_fn, weight=1, timebound=5):  # uses f(n)
     
     return target, stats
 
+
+# SEARCH ALGORITHMS
+def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
+    # IMPLEMENT 
+    '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
+    '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
+    '''OUTPUT: A goal state (if a goal is found), else False'''
+    '''implementation of iterative gbfs algorithm'''
+    
+    # init
+    
+
+    return None, None #CHANGE THIS
