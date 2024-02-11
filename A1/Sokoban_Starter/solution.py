@@ -335,12 +335,33 @@ def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
     return None, None #CHANGE THIS
 
 def iterative_astar(initial_state, heur_fn, weight=1, timebound=5):  # uses f(n), see how autograder initializes a search line 88
-    # IMPLEMENT 6th
+    # IMPLEMENT 
     '''Provides an implementation of realtime a-star, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False as well as a SearchStats object'''
     '''implementation of iterative astar algorithm'''
     
+    # init
+    target = None
+    best_cost = math.inf
+    smaller_weight = 0.55
+    end_time = os.times()[0] + timebound
+    time_available = end_time - os.times()[0]
+
+    # search
+    while time_available > 0:
+        # run weighted astar
+        final, stats = weighted_astar(initial_state, heur_fn, weight, (time_available-0.1)) # 0.1s buffer
+        weight = weight * smaller_weight # interatively smaller weight
+        time_available = end_time - os.times()[0] # check available time
+        # check if goal state is found
+        if final:
+            # check if the cost is better
+            if final.gval < best_cost:
+                best_cost = final.gval
+                target = final
+        else:
+            break
     
-    return None, None #CHANGE THIS
+    return target, stats
 
