@@ -62,7 +62,7 @@ def at_corner(box_pos, state):
 def on_edge(obj, state):
     return obj[0] == 0 or obj[0] == state.width - 1 or obj[1] == 0 or obj[1] == state.height - 1
 
-#if no storage on the edge of the wall, this is a dead end
+# if no storage on the edge of the wall, this is a dead end
 def storage_on_edge(box_position, state): # box already on edge
     for storage in state.storage:
         if box_position[0] == 0 and storage[0] == box_position[0]:
@@ -75,6 +75,7 @@ def storage_on_edge(box_position, state): # box already on edge
             return True
     return False
 
+# check if a box is in a tunnel or narrow path
 def is_in_tunnel_or_narrow_path(box, obstacles):
     # Checks around the box
     directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # Up, Down, Left, Right
@@ -90,6 +91,7 @@ def is_in_tunnel_or_narrow_path(box, obstacles):
     # This is a basic approximation and might not perfectly capture all tunnel situations, especially for complex puzzles
     return obstacle_count >= 2
 
+# Cache the results of the tunnel/narrow path check
 def is_in_tunnel_or_narrow_path_cached(box, obstacles):
     # Create a unique key for the current configuration
     # Note: The key should uniquely represent the box position and the state of its surroundings
@@ -108,6 +110,7 @@ def is_in_tunnel_or_narrow_path_cached(box, obstacles):
 
     return is_tunnel
 
+# Priority queue for distance calculation
 def priority_distance(object, sets):
     distances = []
     for things in sets:
@@ -119,6 +122,7 @@ def priority_distance(object, sets):
    
     return min_distance
 
+# Priority queue for distance calculation with exclusion
 def priority_distance_exclude(object, storage_points, exclude):
     distances = []
     for storage_position in storage_points:
@@ -131,6 +135,7 @@ def priority_distance_exclude(object, storage_points, exclude):
         return min_distance, chosen_storage
     return None, None  # In case all storage points are excluded or list is empty
 
+# Check for 2x2 square formation of boxes
 def check_square_formation(boxes, state):
     for box in boxes:
         # Make sure 'box' is a tuple (x, y)
@@ -146,22 +151,7 @@ def check_square_formation(boxes, state):
     
     return False  # No square formation found
 
-def check_adjacent_boxes_on_edge(box, state):
-    # Check vertical adjacency (one box directly above the other)
-    vertical_adjacent = (box[0], box[1] + 1)
-    if vertical_adjacent in state.boxes:
-        # If both boxes are at the top or bottom edge, it's a deadlock
-        if box[1] == 0 or vertical_adjacent[1] == state.height - 1:
-            return True
-    # Check horizontal adjacency (one box directly beside the other)
-    horizontal_adjacent = (box[0] + 1, box[1])
-    if horizontal_adjacent in state.boxes:
-        # If both boxes are at the left or right edge, it's a deadlock
-        if box[0] == 0 or horizontal_adjacent[0] == state.width - 1:
-            return True
-        
-    return False
-
+# Check for 2x1 box deadlock
 def check_adjacent_boxes_against_wall(box, state):
     # Horizontal adjacency check (box directly to the left or right)
     # Ensure both boxes are along the left or right edge and not at storage    
@@ -305,6 +295,42 @@ def fval_function(sN, weight):
 
 #--------------------------------------------------------------
 
+# SEARCH ALGORITHMS
+def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
+    # IMPLEMENT 
+    '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
+    '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
+    '''OUTPUT: A goal state (if a goal is found), else False'''
+    '''implementation of iterative gbfs algorithm'''
+    
+    # init
+    target = None
+    best_cost = (math.inf, math.inf, math.inf) # costbound definition in search egine
+    # succ.gval > costbound[0] or 
+    # succ_hval > costbound[1] or
+    # succ.gval + succ_hval > costbound[2]
+
+    se = SearchEngine('best_first', 'full')
+    se.init_search(initial_state, sokoban_goal_state, heur_fn)
+    
+    end_time = os.times()[0] + timebound
+    time_available = end_time - os.times()[0]
+
+    # search
+    while time_available > 0:
+        # run the search engine
+        final, stats = se.search(timebound=(time_available-0.1), costbound=best_cost) # 0.1s buffer
+        time_available = end_time - os.times()[0] # check available time
+        # check if goal state is found
+        if final:
+            best_cost = (final.gval, math.inf, math.inf) # <- prune based on the g-value (A1 handout) 
+            target = final
+        else:
+            break
+
+    return target, stats
+
+
 def weighted_astar(initial_state, heur_fn, weight, timebound):
     # IMPLEMENT
     '''Provides an implementation of weighted a-star, as described in the HW1 handout'''
@@ -352,38 +378,3 @@ def iterative_astar(initial_state, heur_fn, weight=1, timebound=5):  # uses f(n)
     
     return target, stats
 
-
-# SEARCH ALGORITHMS
-def iterative_gbfs(initial_state, heur_fn, timebound=5):  # only use h(n)
-    # IMPLEMENT 
-    '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
-    '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
-    '''OUTPUT: A goal state (if a goal is found), else False'''
-    '''implementation of iterative gbfs algorithm'''
-    
-    # init
-    target = None
-    best_cost = (math.inf, math.inf, math.inf) # costbound definition in search egine
-    # succ.gval > costbound[0] or 
-    # succ_hval > costbound[1] or
-    # succ.gval + succ_hval > costbound[2]
-
-    se = SearchEngine('best_first', 'full')
-    se.init_search(initial_state, sokoban_goal_state, heur_fn)
-    
-    end_time = os.times()[0] + timebound
-    time_available = end_time - os.times()[0]
-
-    # search
-    while time_available > 0:
-        # run the search engine
-        final, stats = se.search(timebound=(time_available-0.1), costbound=best_cost) # 0.1s buffer
-        time_available = end_time - os.times()[0] # check available time
-        # check if goal state is found
-        if final:
-            best_cost = (final.gval, math.inf, math.inf) # <- prune based on the g-value (A1 handout) 
-            target = final
-        else:
-            break
-
-    return target, stats
