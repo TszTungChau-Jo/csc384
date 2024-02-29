@@ -34,12 +34,13 @@ import itertools
 
 def binary_ne_grid(fpuzz_grid):
     ##IMPLEMENT
-    
+    return
 
 def nary_ad_grid(fpuzz_grid):
     ##IMPLEMENT 
-    
+    return
+
 
 def caged_csp(fpuzz_grid):
     ##IMPLEMENT 
-    
+    return

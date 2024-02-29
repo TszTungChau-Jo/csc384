@@ -140,7 +140,7 @@ def nQueens(n):
     return csp
 
 # SPECIFY WHAT TO TEST
-TEST_ENCODINGS   = True
+TEST_ENCODINGS   = False
 TEST_PROPAGATORS = True
 
 class TestStringMethods(unittest.TestCase):
@@ -164,58 +164,68 @@ class TestStringMethods(unittest.TestCase):
                 bin_count += 1
         self.assertEqual(bin_count, diff_const_count, "Wrong number of binary not equal constraints for binary_ne_grid!")
 
+    # 1
     @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
     def test_bne_grid_1(self):
         board = BOARDS[0]
         self.helper_bne_grid(board)
 
+    # 2
     @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
     def test_bne_grid_2(self):
         board = BOARDS[1]
         self.helper_bne_grid(board)
 
+    # 3
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_1(self):
         board = BOARDS[0]
         self.helper_prop(board)
 
+    # 4
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_2(self):
         board = BOARDS[1]
         self.helper_prop(board)
 
+    # 5
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_3(self):
         board = BOARDS[2]
         self.helper_prop(board)
 
+    # 6
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_4(self):
         board = BOARDS[3]
         self.helper_prop(board, prop_FI)
 
+    # 7
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")   
     def test_props_5(self):
         board = BOARDS[4]
         self.helper_prop(board, prop_FI)
 
+    # 8
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_6(self):
         board = BOARDS[5]
         self.helper_prop(board, prop_FI)
 
+    # 9
     ##Tests FC after the first queen is placed in position 1.
     @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
     def test_simple_FC(self):
         queens = nQueens(8)
         curr_vars = queens.get_all_vars()
         curr_vars[0].assign(1)
-        propagators.prop_FC(queens,newVar=curr_vars[0])
+        propagators.prop_FC(queens, newVar=curr_vars[0])
         answer = [[1],[3, 4, 5, 6, 7, 8],[2, 4, 5, 6, 7, 8],[2, 3, 5, 6, 7, 8],[2, 3, 4, 6, 7, 8],[2, 3, 4, 5, 7, 8],[2, 3, 4, 5, 6, 8],[2, 3, 4, 5, 6, 7]]
         var_domain = [x.cur_domain() for x in curr_vars]
         for i in range(len(curr_vars)):
             self.assertEqual(var_domain[i], answer[i], "Failed simple FC test: variable domains don't match expected results")
-    
+
+    # 10
     @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
     def test_DWO_FC(self):
         queens = nQueens(6)
@@ -228,8 +238,55 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue(pruned[0], "Failed a FC test: returned DWO too early.")
         cur_var[4].assign(1)
         pruned = propagators.prop_FC(queens,newVar=cur_var[4])
-
         self.assertFalse(pruned[0], "Failed a FC test: should have resulted in a DWO")
 
+class CustomTestResult(unittest.TextTestResult):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.passed = []
+        self.skipped = {}
+        self.failed = []
+        self.test_ids = set()
+
+    def startTest(self, test):
+        super().startTest(test)
+        self.test_ids.add(test.id())
+
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        self.passed.append(test)
+
+    def addSkip(self, test, reason):
+        #super().addSkip(test, reason)
+        # Use a dictionary to prevent duplicates
+        self.skipped[test.id()] = (test, reason)
+
+    def addFailure(self, test, err):
+        super().addFailure(test, err)
+        error_message = self._exc_info_to_string(err, test)
+        self.failed.append((test, error_message))
+
+    def printSummary(self):
+        print("\nSummary:")
+        print(f"Passed: {len(self.passed)}")
+        for test in self.passed:
+            print(f"    {test.id().split('.')[-1]}")
+
+        print(f"Skipped: {len(self.skipped)}")
+        for test_id, (test, reason) in self.skipped.items():
+            print(f"    {test.id().split('.')[-1]}: {reason}")
+
+        print(f"Failed: {len(self.failed)}")
+        for test, err in self.failed:
+            error_summary = err.split('\n')[-2] if '\n' in err else err
+            print(f"    {test.id().split('.')[-1]}: {error_summary}")
+
+
+#if __name__ == '__main__':
+#    unittest.main()
+
 if __name__ == '__main__':
-    unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
+    runner = unittest.TextTestRunner(resultclass=CustomTestResult)
+    result = runner.run(suite)
+    result.printSummary()

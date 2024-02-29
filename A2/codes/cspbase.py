@@ -357,7 +357,6 @@ class CSP:
         print("   Variables = ", self.vars)
         print("   Constraints = ", self.cons)
 
-
     def print_soln(self):
         print("CSP", self.name, " Assignments = ")
         for v in self.vars:
@@ -424,7 +423,7 @@ class BT:
         '''Add variable back to list of unassigned vars'''
         self.unasgn_vars.append(var)
         
-    def bt_search(self,propagator,var_ord=None,val_ord=None):
+    def bt_search(self, propagator, var_ord=None, val_ord=None):
         '''Try to solve the CSP using specified propagator routine
 
            propagator == a function with the following template
