@@ -111,7 +111,7 @@ def prop_FC(csp, newVar=None):
 def prop_FI(csp, newVar=None):
     '''Do full inference. If newVar is None we initialize the queue
        with all variables.'''
-    #IMPLEMENT
+
     pruned = []  # To keep track of pruned values
     if newVar is None:
         varQueue = [v for v in csp.get_all_vars() if not v.is_assigned()]
@@ -131,7 +131,7 @@ def prop_FI(csp, newVar=None):
                             # Domain wipe out, fail immediately
                             return False, pruned
                         else:
-                            if V not in varQueue:
+                            if V not in varQueue: # if V not already in queue
                                 varQueue.append(V)
 
     return True, pruned

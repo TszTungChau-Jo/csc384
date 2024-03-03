@@ -1,5 +1,6 @@
 import time
 import functools
+import math
 
 '''Constraint Satisfaction Routines
    A) class Variable
@@ -323,7 +324,7 @@ class CSP:
             self.vars.append(v)
             self.vars_to_cons[v] = []
 
-    def add_constraint(self,c):
+    def add_constraint(self, c):
         '''Add constraint to CSP. Note that all variables in the 
            constraints scope must already have been added to the CSP'''
         if not type(c) is Constraint:
@@ -352,16 +353,46 @@ class CSP:
         '''return list of unassigned variables in the CSP'''
         return [v for v in self.vars if not v.is_assigned()]
 
+    #def print_all(self):
+    #    print("CSP", self.name)
+    #    print("   Variables = ", self.vars)
+    #    print("   Constraints = ", self.cons)
+
     def print_all(self):
         print("CSP", self.name)
-        print("   Variables = ", self.vars)
-        print("   Constraints = ", self.cons)
+        print("   Variables = ", [str(var) for var in self.vars])
+        print("   Constraints:")
+        for con in self.cons:
+            # Using the __str__ method of Constraint to print its name and scope variables
+            print(f"       {con}")
+            # Optionally, you can print additional details if they're available
+            # For example, printing whether a specific variable-value pair has support
+            # This is more of a demonstration and might not be directly useful without context
+            #for var in con.get_scope():
+            #    if var.is_assigned():
+            #        has_support = con.has_support(var, var.get_assigned_value())
+            #        print(f"           Variable {var.name} = {var.get_assigned_value()} has support: {has_support}")
 
+
+    
     def print_soln(self):
         print("CSP", self.name, " Assignments = ")
         for v in self.vars:
             print(v, " = ", v.get_assigned_value(), "    ", end='')
         print("")
+    
+
+    def print_soln_board(self):
+        print(f"CSP {self.name} Assignments:")
+        size = int(math.sqrt(len(self.vars)))  # Assuming a square grid
+        # Sort variables by their names to ensure they are printed in order
+        sorted_vars = sorted(self.vars, key=lambda var: var.name)
+        for i in range(size):
+            for j in range(size):
+                index = i * size + j
+                value = sorted_vars[index].get_assigned_value()
+                print(value if value is not None else '_', end=' ')
+            print()  # Newline after each row
 
 ########################################################
 # Backtracking Routine                                 #
@@ -395,7 +426,6 @@ class BT:
         '''Turn search trace off'''
         self.TRACE = False
 
-        
     def clear_stats(self):
         '''Initialize counters'''
         self.nDecisions = 0

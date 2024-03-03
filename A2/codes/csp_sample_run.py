@@ -45,11 +45,11 @@ btracker.trace_on()
 #print("Plain Bactracking on simple CSP")
 #btracker.bt_search(prop_BT)
 #print("=======================================================")
-print("Forward Checking on simple CSP")
-btracker.bt_search(prop_FC)
-print("=======================================================")
-print("Full Inference on simple CSP")
-btracker.bt_search(prop_FI)
+#print("Forward Checking on simple CSP")
+#btracker.bt_search(prop_FC)
+#print("=======================================================")
+#print("Full Inference on simple CSP")
+#btracker.bt_search(prop_FI)
 
 #Now n-Queens example
 
@@ -88,6 +88,11 @@ def nQueens(n):
 
 def solve_nQueens(n, propType, trace=False):
     csp = nQueens(n)
+    
+    # Print the CSP attributes
+    csp.print_all()  # Call the method to print CSP variables and constraints
+    csp.print_soln()  # Call the method to print CSP solutions
+    
     solver = BT(csp)
     if trace:
         solver.trace_on()
@@ -98,14 +103,19 @@ def solve_nQueens(n, propType, trace=False):
     elif propType == 'FI':
         solver.bt_search(prop_FI)
         
+    # Print the CSP attributes
+    csp.print_all()  # Call the method to print CSP variables and constraints
+    csp.print_soln()  # Call the method to print CSP solutions
+
+        
 trace = True
 #trace = False
 #print("Plain Bactracking on 8-queens")
 #solve_nQueens(8, 'BT', trace)
-print("=======================================================")
-print("Forward Checking 8-queens")
-solve_nQueens(8, 'FC', trace)
-print("=======================================================")
+#print("=======================================================")
+#print("Forward Checking 8-queens")
+#solve_nQueens(8, 'FC', trace)
+#print("=======================================================")
 print("FI 8-queens")
 solve_nQueens(8, 'FI', trace)
 

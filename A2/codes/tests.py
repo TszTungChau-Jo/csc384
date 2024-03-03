@@ -8,6 +8,7 @@ from puzzle_csp import *
 from propagators import *
 import propagators
 
+# Total 6 boards available for testing
 BOARDS = [ [[3],[11,21,3,0],[12,22,2,1],[13,23,33,6,3],[31,32,5,0]],
 [[4],[11,21,6,3],[12,13,3,0],[14,24,3,1],[22,23,7,0],[31,32,2,2],[33,43,3,1],[34,44,6,3],[41,42,7,0]],
 [[5],[11,21,4,1],[12,13,2,2],[14,24,1,1],[15,25,1,1],[22,23,9,0],[31,32,3,1],[33,34,44,6,3],[35,45,9,0],[41,51,7,0],[42,43,3,1],[52,53,6,3],[54,55,4,1]],
@@ -140,8 +141,12 @@ def nQueens(n):
     return csp
 
 # SPECIFY WHAT TO TEST
-TEST_ENCODINGS   = False
+TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
+TO_TEST = False
+
+# User-defined helper functions
+
 
 class TestStringMethods(unittest.TestCase):
     def helper_prop(self, board, prop=prop_FC):
@@ -151,41 +156,133 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue(check_cages(var_array, board), "Incorect value in a cage!")
         self.assertTrue(check_diff(var_array, board), "Repeated value in a row or column!")
 
+            
     def helper_bne_grid(self, board):
         new_b = []
         for sub_list in board:
             new_b.append(list(sub_list))
-        csp, _ = binary_ne_grid(new_b)
-        diff_const_count = (board[0][0]+board[0][0])*board[0][0]*(board[0][0]-1)//2 # number of all binary diff constraints
+        csp, var_array = binary_ne_grid(new_b)
+        board_size = board[0][0]
+        diff_const_count = (board_size + board_size)*board_size*(board_size-1)//2 # number of all binary diff constraints
         cons = csp.get_all_cons()
         bin_count = 0 # number of binary constraints
         for c in cons:
             if len(c.get_scope()) == 2:
                 bin_count += 1
         self.assertEqual(bin_count, diff_const_count, "Wrong number of binary not equal constraints for binary_ne_grid!")
+        
+        # Print the CSP structure
+        print(f"\nbne_grid test: \nCSP for board size {board[0][0]}x{board[0][0]}")
+        print(f"Number of all binary diff constraints: {diff_const_count}")
+        print(f"Actual number of binary not-equal constraints: {bin_count}")
+
+        # Print the variable assignments in a grid format
+        print("Variable assignments:")
+        for row in var_array:
+            print(' '.join(str(var.get_assigned_value()) if var.is_assigned() else '_' for var in row))
+            
+        # Print the CSP attributes
+        csp.print_all()  # Call the method to print CSP variables and constraints
+        csp.print_soln()  # Call the method to print CSP solutions
+
+        trace = False
+        solver = BT(csp)
+        if trace:
+            solver.trace_on()
+        #solver.bt_search(prop_BT)
+        #solver.bt_search(prop_FC)
+        solver.bt_search(prop_FI)
+
+        # Print the CSP attributes
+        #csp.print_soln()  # Call the method to print CSP solutions
+        csp.print_soln_board()  # Call the method to print CSP solutions in a board format
+
+
+    def helper_nary_ad_grid(self, board):
+        new_b = list(board)
+        csp, var_array = nary_ad_grid(new_b)
+        
+        # Expected number of all-different constraints (one per row and one per column)
+        expected_ad_const_count = board[0][0] * 2  # Since it's N rows + N columns
+        
+        cons = csp.get_all_cons()
+        ad_count = len(cons)  # Assuming each constraint added is an all-different constraint
+        
+        self.assertEqual(ad_count, expected_ad_const_count, "Incorrect number of all-different constraints")
+
+        print(f"\nnary_ad_grid test: \nCSP for board size {board[0][0]}x{board[0][0]}")
+        print(f"Expected number of all-different constraints: {expected_ad_const_count}")
+        print(f"Actual number of all-different constraints: {ad_count}")
+        
+        print("Variable assignments before solving:")
+        for row in var_array:
+            print(' '.join(str(var.get_assigned_value()) if var.is_assigned() else '_' for var in row))
+        
+        # You can solve the CSP here and then print the variable assignments again to show the solution
+
+        # Print the CSP attributes
+        csp.print_all()  # Call the method to print CSP variables and constraints
+        csp.print_soln()  # Call the method to print CSP solutions
+        
+        trace = False
+        solver = BT(csp)
+        if trace:
+            solver.trace_on()
+        #solver.bt_search(prop_BT)
+        #solver.bt_search(prop_FC)
+        solver.bt_search(prop_FI)
+
+        # Print the CSP attributes
+        #csp.print_soln()  # Call the method to print CSP solutions
+        csp.print_soln_board()  # Call the method to print CSP solutions in a board format
+    
 
     # 1
-    @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
+    @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
     def test_bne_grid_1(self):
         board = BOARDS[0]
         self.helper_bne_grid(board)
 
     # 2
     @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
-    def test_bne_grid_2(self):
-        board = BOARDS[1]
-        self.helper_bne_grid(board)
+    def test_bne_grid_all(self):
+        for board in BOARDS:
+            csp, var_array = binary_ne_grid(board)
+            self.assertIsNotNone(csp)
+            self.assertIsNotNone(var_array)
+            # The helper function will need to check the correct application of constraints
+            # This might involve checking the size of the CSP's constraint list
+            # and verifying that each constraint's satisfying tuples are correct
+            self.helper_bne_grid(board)
 
     # 3
+    @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
+    def test_nary_ad_grid_1(self):
+        board = BOARDS[0]
+        self.helper_nary_ad_grid(board)
+        
+    # 4
+    @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
+    def test_nary_ad_grid_all(self):
+        for board in BOARDS:
+            csp, var_array = nary_ad_grid(board)
+            self.assertIsNotNone(csp)
+            self.assertIsNotNone(var_array)
+            # The helper function will need to check the correct application of constraints
+            # This might involve checking the size of the CSP's constraint list
+            # and verifying that each constraint's satisfying tuples are correct
+            self.helper_nary_ad_grid(board)
+    
+    # 4
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_1(self):
         board = BOARDS[0]
         self.helper_prop(board)
 
-    # 4
+    # 5
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_2(self):
-        board = BOARDS[1]
+        board = BOARDS[0]
         self.helper_prop(board)
 
     # 5
