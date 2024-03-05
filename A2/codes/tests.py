@@ -9,12 +9,16 @@ from propagators import *
 import propagators
 
 # Total 6 boards available for testing
-BOARDS = [ [[3],[11,21,3,0],[12,22,2,1],[13,23,33,6,3],[31,32,5,0]],
+BOARDS = [ 
+[[3],[11,21,3,0],[12,22,2,1],[13,23,33,6,3],[31,32,5,0]],
 [[4],[11,21,6,3],[12,13,3,0],[14,24,3,1],[22,23,7,0],[31,32,2,2],[33,43,3,1],[34,44,6,3],[41,42,7,0]],
 [[5],[11,21,4,1],[12,13,2,2],[14,24,1,1],[15,25,1,1],[22,23,9,0],[31,32,3,1],[33,34,44,6,3],[35,45,9,0],[41,51,7,0],[42,43,3,1],[52,53,6,3],[54,55,4,1]],
 [[6],[11,21,11,0],[12,13,2,2],[14,24,20,3],[15,16,26,36,6,3],[22,23,3,1],[25,35,3,2],[31,32,41,42,240,3],[33,34,6,3],[43,53,6,3],[44,54,55,7,0],[45,46,30,3],[51,52,6,3],[56,66,9,0],[61,62,63,8,0],[64,65,2,2]],
 [[5],[11,12,21,22,10,0],[13,14,23,24,34,18,0],[15,25,35,2,1],[31,32,33,1,1],[41,42,43,51,52,53,600,3],[44,54,55,2,2],[45,3]], 
-[[6],[11,12,13,2,2],[14,15,3,1],[16,26,36,11,0],[21,22,23,2,2],[24,25,34,35,40,3],[31,41,51,61,14,0],[32,33,42,43,52,53,3600,3],[44,54,64,120,3],[45,46,55,56,1,1],[62,63,5,1],[65,66,5,0]]]
+[[6],[11,12,13,2,2],[14,15,3,1],[16,26,36,11,0],[21,22,23,2,2],[24,25,34,35,40,3],[31,41,51,61,14,0],[32,33,42,43,52,53,3600,3],[44,54,64,120,3],[45,46,55,56,1,1],[62,63,5,1],[65,66,5,0]],
+[[6],[11,12,13,13,0],[14,15,16,24,25,26,720,3],[21,31,41,51,-2,1],[22,23,33,43,120,3],[32,42,52,62,53,63,19,0],[51,61,3,1],[34,35,44,45,90,3],[36,46,56,55,54,18,0],[64,65,66,1,1]]
+]
+
 
 ## HELPER FUNCTIONS
 def check_diff(vars, board):
@@ -92,15 +96,19 @@ def check_cages(vars, board):
                 cage_values.append(vars[cell_i][cell_j].get_assigned_value())
             if op == 0:
                 if add_check(cage_values,val) == False:
+                    print("\nadd error")
                     return False
             elif op == 1:
                 if sub_check(cage_values,val) == False:
+                    print("\nsub error")
                     return False
             elif op == 2:
                 if div_check(cage_values,val) == False:
+                    print("\ndiv error")
                     return False
             elif op ==3:
                 if mult_check(cage_values,val) == False:
+                    print("\nmult error")
                     return False
     return True
 
@@ -143,18 +151,26 @@ def nQueens(n):
 # SPECIFY WHAT TO TEST
 TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
-TO_TEST = False
+TO_TEST = True
 
 # User-defined helper functions
 
 
 class TestStringMethods(unittest.TestCase):
-    def helper_prop(self, board, prop=prop_FC):
+    def helper_prop(self, board, prop=prop_FI):
         csp, var_array = caged_csp(board)
+        
+        # Print the CSP attributes
+        csp.print_all()  # Call the method to print CSP variables and constraints
+        csp.print_soln()  # Call the method to print CSP solutions
         solver = BT(csp)
+        #solver.trace_on()
         solver.bt_search(prop)
+        csp.print_soln_board()  # Call the method to print CSP solutions in a board format
         self.assertTrue(check_cages(var_array, board), "Incorect value in a cage!")
         self.assertTrue(check_diff(var_array, board), "Repeated value in a row or column!")
+
+
 
             
     def helper_bne_grid(self, board):
@@ -244,7 +260,7 @@ class TestStringMethods(unittest.TestCase):
         self.helper_bne_grid(board)
 
     # 2
-    @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
+    @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
     def test_bne_grid_all(self):
         for board in BOARDS:
             csp, var_array = binary_ne_grid(board)
@@ -262,7 +278,7 @@ class TestStringMethods(unittest.TestCase):
         self.helper_nary_ad_grid(board)
         
     # 4
-    @unittest.skipUnless(TEST_ENCODINGS, "Not Testing Encodings.")
+    @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
     def test_nary_ad_grid_all(self):
         for board in BOARDS:
             csp, var_array = nary_ad_grid(board)
@@ -273,45 +289,45 @@ class TestStringMethods(unittest.TestCase):
             # and verifying that each constraint's satisfying tuples are correct
             self.helper_nary_ad_grid(board)
     
-    # 4
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    # x; passed
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_1(self):
         board = BOARDS[0]
         self.helper_prop(board)
 
-    # 5
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    # x; passed
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_2(self):
-        board = BOARDS[0]
+        board = BOARDS[1]
         self.helper_prop(board)
 
-    # 5
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    # x; passed
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_3(self):
         board = BOARDS[2]
         self.helper_prop(board)
 
-    # 6
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    # x; passed
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_4(self):
         board = BOARDS[3]
         self.helper_prop(board, prop_FI)
 
-    # 7
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")   
+    # x; failed due to abs woring implication
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")   
     def test_props_5(self):
         board = BOARDS[4]
         self.helper_prop(board, prop_FI)
 
-    # 8
+    # x; failed due to box cage not detected
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
     def test_props_6(self):
         board = BOARDS[5]
         self.helper_prop(board, prop_FI)
 
-    # 9
+    # xx
     ##Tests FC after the first queen is placed in position 1.
-    @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
+    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
     def test_simple_FC(self):
         queens = nQueens(8)
         curr_vars = queens.get_all_vars()
@@ -322,8 +338,8 @@ class TestStringMethods(unittest.TestCase):
         for i in range(len(curr_vars)):
             self.assertEqual(var_domain[i], answer[i], "Failed simple FC test: variable domains don't match expected results")
 
-    # 10
-    @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
+    # xx
+    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
     def test_DWO_FC(self):
         queens = nQueens(6)
         cur_var = queens.get_all_vars()

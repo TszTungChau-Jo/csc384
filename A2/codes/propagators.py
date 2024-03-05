@@ -90,6 +90,7 @@ def prop_FC(csp, newVar=None):
         return True, []
 
     pruned = []  # To keep track of pruned values
+    
     # Iterate over all constraints that include newVar
     for constraint in csp.get_cons_with_var(newVar):
         # Check if there's exactly one unassigned variable in the constraint's scope
