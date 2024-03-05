@@ -153,11 +153,9 @@ TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
 TO_TEST = True
 
-# User-defined helper functions
-
 
 class TestStringMethods(unittest.TestCase):
-    def helper_prop(self, board, prop=prop_FI):
+    def helper_prop(self, board, prop=prop_FC):
         csp, var_array = caged_csp(board)
         
         # Print the CSP attributes
@@ -171,8 +169,6 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue(check_diff(var_array, board), "Repeated value in a row or column!")
 
 
-
-            
     def helper_bne_grid(self, board):
         new_b = []
         for sub_list in board:
@@ -252,7 +248,6 @@ class TestStringMethods(unittest.TestCase):
         #csp.print_soln()  # Call the method to print CSP solutions
         csp.print_soln_board()  # Call the method to print CSP solutions in a board format
     
-
     # 1
     @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
     def test_bne_grid_1(self):
@@ -320,7 +315,7 @@ class TestStringMethods(unittest.TestCase):
         self.helper_prop(board, prop_FI)
 
     # x; failed due to box cage not detected
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_6(self):
         board = BOARDS[5]
         self.helper_prop(board, prop_FI)

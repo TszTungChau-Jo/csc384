@@ -148,8 +148,6 @@ def modified_satisfying_tuples_for_subtraction(size, cage_vars, target, min_uniq
 
     return satisfying_tuples
 
-
-
 """
 The three encodings take as input a valid FunPuzz grid, which is a list of lists, 
 where the first list has a single element, N, which is the size of each dimension of the board, 
