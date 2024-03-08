@@ -151,7 +151,7 @@ def nQueens(n):
 # SPECIFY WHAT TO TEST
 TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
-TO_TEST = False
+TO_TEST = True
 
 
 class TestStringMethods(unittest.TestCase):
@@ -159,12 +159,12 @@ class TestStringMethods(unittest.TestCase):
         csp, var_array = caged_csp(board)
         
         # Print the CSP attributes
-        csp.print_all()  # Call the method to print CSP variables and constraints
-        csp.print_soln()  # Call the method to print CSP solutions
+        #csp.print_all()  # Call the method to print CSP variables and constraints
+        #csp.print_soln()  # Call the method to print CSP solutions
         solver = BT(csp)
         #solver.trace_on()
         solver.bt_search(prop)
-        csp.print_soln_board()  # Call the method to print CSP solutions in a board format
+        #csp.print_soln_board()  # Call the method to print CSP solutions in a board format
         self.assertTrue(check_cages(var_array, board), "Incorect value in a cage!")
         self.assertTrue(check_diff(var_array, board), "Repeated value in a row or column!")
 

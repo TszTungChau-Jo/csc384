@@ -247,10 +247,10 @@ def caged_csp(fpuzz_grid):
             constraint = Constraint(f'Cage-{cage[:-2]}', cage_vars)
             satisfying_tuples = []
             
-            print(cage_vars)
             min_unique = get_min_unique_rows_or_columns(cage_vars)
-            print(f"Minimum number of unique rows or columns: {min_unique}")
-            
+            #print(f"Minimum number of unique rows or columns: {min_unique}")
+            #print(cage_vars)
+
             # Generate satisfying tuples based on the operation
             if operation == 0:  # Addition
                 satisfying_tuples = [t for t in itertools.product(range(1, size+1), repeat=len(cage_vars)) 
@@ -258,9 +258,9 @@ def caged_csp(fpuzz_grid):
                 # make sure to remove duplicates
                 unique_set = set(t for t in satisfying_tuples)
                 satisfying_tuples = [tuple(t) for t in unique_set]
-                print("add sat:  ", satisfying_tuples)
+                #print("add sat:  ", satisfying_tuples)
             
-            elif operation == 1:  # Subtraction; needs update -> should be fine?
+            elif operation == 1:  # Subtraction; updated -> should be fine?
                 min_unique = get_min_unique_rows_or_columns(cage_vars)
                 satisfying_tuples = modified_satisfying_tuples_for_subtraction(size, cage_vars, target, min_unique)
                 
@@ -271,9 +271,9 @@ def caged_csp(fpuzz_grid):
                 unique_set = set(t for t in satisfying_tuples)
                 satisfying_tuples = [tuple(t) for t in unique_set]  
                 
-                print("sub sat:  ", satisfying_tuples)
+                #print("sub sat:  ", satisfying_tuples)
             
-            elif operation == 2:  # Division; needs update
+            elif operation == 2:  # Division; updated -> should be fine?
                 min_unique = get_min_unique_rows_or_columns(cage_vars)
                 
                 satisfying_tuples = modified_satisfying_tuples_for_division(size, cage_vars, target, min_unique)
@@ -287,7 +287,7 @@ def caged_csp(fpuzz_grid):
                 # make sure to remove duplicates
                 unique_set = set(t for t in satisfying_tuples)
                 satisfying_tuples = [tuple(t) for t in unique_set]  
-                print("div sat:  ", satisfying_tuples)
+                #print("div sat:  ", satisfying_tuples)
             
             elif operation == 3:  # Multiplication
                 satisfying_tuples = [t for t in itertools.product(range(1, size+1), repeat=len(cage_vars)) 
@@ -295,7 +295,7 @@ def caged_csp(fpuzz_grid):
                 # make sure to remove duplicates
                 unique_set = set(t for t in satisfying_tuples)
                 satisfying_tuples = [tuple(t) for t in unique_set]  
-                print("mul sat:  ", satisfying_tuples)
+                #print("mul sat:  ", satisfying_tuples)
 
             constraint.add_satisfying_tuples(satisfying_tuples)
             csp.add_constraint(constraint)
