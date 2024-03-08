@@ -132,7 +132,8 @@ def prop_FI(csp, newVar=None):
                             # Domain wipe out, fail immediately
                             return False, pruned
                         else:
-                            if V not in varQueue: # if V not already in queue
+                            # if V not already in queue
+                            if V not in varQueue:
                                 varQueue.append(V)
 
     return True, pruned

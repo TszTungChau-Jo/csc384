@@ -151,7 +151,7 @@ def nQueens(n):
 # SPECIFY WHAT TO TEST
 TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
-TO_TEST = True
+TO_TEST = False
 
 
 class TestStringMethods(unittest.TestCase):
@@ -309,7 +309,7 @@ class TestStringMethods(unittest.TestCase):
         self.helper_prop(board, prop_FI)
 
     # x; failed due to abs woring implication
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")   
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS , "Not Testing Propagators and Encodings.")   
     def test_props_5(self):
         board = BOARDS[4]
         self.helper_prop(board, prop_FI)

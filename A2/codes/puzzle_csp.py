@@ -34,6 +34,7 @@ from cspbase import *
 import itertools
 from itertools import product
 import operator
+import math
 
 def binary_ne_grid(fpuzz_grid):
     # The size of the grid is the first element in the list
@@ -141,7 +142,33 @@ def modified_satisfying_tuples_for_subtraction(size, cage_vars, target, min_uniq
         for perm in itertools.permutations(combination):
             if perm[0] - sum(perm[1:]) == target:
                 satisfying_tuples.append(perm)
-                #break  # Once a valid permutation is found, no need to check others
+                #break  # Once a valid permutation is found, no need to check others -- tbd
+    
+    unique_set = set(t for t in satisfying_tuples)
+    satisfying_tuples = [tuple(t) for t in unique_set]    
+
+    return satisfying_tuples
+
+def modified_satisfying_tuples_for_division(size, cage_vars, target, min_unique):
+    """
+    Generate satisfying tuples considering the minimum number of unique rows or columns.
+    """
+    combinations = generate_combinations_with_repetition(size, len(cage_vars), min_unique)
+    
+    satisfying_tuples = []
+    for combination in combinations:
+        # Check all permutations of the combination
+        for perm in itertools.permutations(combination):
+            # Perform division from left to right
+            result = perm[0]
+            for num in perm[1:]:
+                if num == 0:  # Avoid division by zero
+                    break
+                result /= num
+
+            # If the result of the division equals the target, add the permutation to the satisfying tuples
+            if result == target:
+                satisfying_tuples.append(perm)
     
     unique_set = set(t for t in satisfying_tuples)
     satisfying_tuples = [tuple(t) for t in unique_set]    
@@ -181,6 +208,7 @@ def caged_csp(fpuzz_grid):
     vars_flat = [var for sublist in var_array for var in sublist]
     csp = CSP(f'FunPuzz-{size}x{size}', vars_flat)
     
+    # Implement binary_ne constraints
     # Add constraints
     for i in range(size):
         for j in range(size):
@@ -209,7 +237,6 @@ def caged_csp(fpuzz_grid):
             constraint_name = f'Fixed-{cell}'
             constraint = Constraint(constraint_name, [var])
             satisfying_tuples = [(target,)]  # The only tuple that satisfies this constraint is the target value itself
-            #print(var)
             constraint.add_satisfying_tuples(satisfying_tuples)
             csp.add_constraint(constraint)
         else:
@@ -230,12 +257,13 @@ def caged_csp(fpuzz_grid):
                                     if sum(t) == target]
                 # make sure to remove duplicates
                 unique_set = set(t for t in satisfying_tuples)
-                satisfying_tuples = [tuple(t) for t in unique_set]  
+                satisfying_tuples = [tuple(t) for t in unique_set]
                 print("add sat:  ", satisfying_tuples)
             
             elif operation == 1:  # Subtraction; needs update -> should be fine?
                 min_unique = get_min_unique_rows_or_columns(cage_vars)
                 satisfying_tuples = modified_satisfying_tuples_for_subtraction(size, cage_vars, target, min_unique)
+                
                 all_permutations = [perm for tup in satisfying_tuples for perm in itertools.permutations(tup)]
                 satisfying_tuples = all_permutations
                 
@@ -246,9 +274,13 @@ def caged_csp(fpuzz_grid):
                 print("sub sat:  ", satisfying_tuples)
             
             elif operation == 2:  # Division; needs update
-                satisfying_tuples = [t for t in itertools.permutations(range(1, size+1), len(cage_vars)) 
-                                    if t[0] / max(1, functools.reduce(operator.mul, t[1:], 1)) == target 
-                                    or max(1, functools.reduce(operator.mul, t[1:], 1)) / t[0] == target]
+                min_unique = get_min_unique_rows_or_columns(cage_vars)
+                
+                satisfying_tuples = modified_satisfying_tuples_for_division(size, cage_vars, target, min_unique)
+                #satisfying_tuples = [t for t in itertools.permutations(range(1, size+1), len(cage_vars)) 
+                #                    if t[0] / max(1, functools.reduce(operator.mul, t[1:], 1)) == target 
+                #                    or max(1, functools.reduce(operator.mul, t[1:], 1)) / t[0] == target]
+                
                 all_permutations = [perm for tup in satisfying_tuples for perm in itertools.permutations(tup)]
                 satisfying_tuples = all_permutations
                 
