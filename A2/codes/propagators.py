@@ -73,37 +73,36 @@ def prop_BT(csp, newVar=None):
     return True, []
 
 def prop_FC(csp, newVar=None):
-    '''Do forward checking. That is check constraints with 
-       only one uninstantiated variable. Remember to keep 
-       track of all pruned variable, value pairs and return '''
-    
     """
-    Forward Checking (FC) constraint propagator - this function should take CSP object and a variable, 
-    check constraints that have exactly one uninstantiated variable in their scope, and prune appropriately. 
-    If a dead-end was found return tuple (False, list), else : return (True,list), 
-    where list is a list of (Variable, value) tuples that have been pruned by the propagator.
+    Forward Checking (FC) constraint propagator. This function should take a CSP object and an optional variable,
+    check all constraints for forward checking if newVar is None, or constraints containing newVar with exactly
+    one uninstantiated variable in their scope, and prune appropriately.
     """
+    pruned = []  # Keep track of pruned values
+    constraints_to_check = []
 
-    # Check if forward checking is triggered by a variable assignment
     if newVar is None:
-        # Forward checking is not applicable before any assignments
-        return True, []
+        # If newVar is None, forward check all constraints
+        constraints_to_check = csp.get_all_cons()
+    else:
+        # Otherwise, only check constraints that include newVar
+        constraints_to_check = csp.get_cons_with_var(newVar)
 
-    pruned = []  # To keep track of pruned values
-    
-    # Iterate over all constraints that include newVar
-    for constraint in csp.get_cons_with_var(newVar):
-        # Check if there's exactly one unassigned variable in the constraint's scope
-        if constraint.get_n_unasgn() == 1:
-            unassigned_var = constraint.get_unasgn_vars()[0]
+    for constraint in constraints_to_check:
+        if newVar is not None and constraint.get_n_unasgn() != 1:
+            # If checking constraints for a specific newVar, skip constraints with more than one unassigned variable
+            continue
+        
+        #print(constraint.get_n_unasgn())
+        # Now handling either all constraints (if newVar is None) or those with exactly one unassigned variable
+        for unassigned_var in constraint.get_unasgn_vars():
             for value in unassigned_var.cur_domain():
-                # Temporarily assign the value to check if the constraint is satisfied
                 if not constraint.has_support(unassigned_var, value):
                     # If no support, prune the value and add to pruned list
                     unassigned_var.prune_value(value)
                     pruned.append((unassigned_var, value))
-                    # If the domain of the unassigned variable is empty, return failure
                     if unassigned_var.cur_domain_size() == 0:
+                        # Domain wipe out, fail immediately
                         return False, pruned
 
     return True, pruned

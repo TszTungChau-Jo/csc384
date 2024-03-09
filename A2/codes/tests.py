@@ -151,8 +151,7 @@ def nQueens(n):
 # SPECIFY WHAT TO TEST
 TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
-TO_TEST = True
-
+TO_TEST = False
 
 class TestStringMethods(unittest.TestCase):
     def helper_prop(self, board, prop=prop_FC):
@@ -202,8 +201,8 @@ class TestStringMethods(unittest.TestCase):
         if trace:
             solver.trace_on()
         #solver.bt_search(prop_BT)
-        #solver.bt_search(prop_FC)
-        solver.bt_search(prop_FI)
+        solver.bt_search(prop_FC)
+        #solver.bt_search(prop_FI)
 
         # Print the CSP attributes
         #csp.print_soln()  # Call the method to print CSP solutions
@@ -241,8 +240,8 @@ class TestStringMethods(unittest.TestCase):
         if trace:
             solver.trace_on()
         #solver.bt_search(prop_BT)
-        #solver.bt_search(prop_FC)
-        solver.bt_search(prop_FI)
+        solver.bt_search(prop_FC)
+        #solver.bt_search(prop_FI)
 
         # Print the CSP attributes
         #csp.print_soln()  # Call the method to print CSP solutions
@@ -290,39 +289,17 @@ class TestStringMethods(unittest.TestCase):
         board = BOARDS[0]
         self.helper_prop(board)
 
-    # x; passed
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
-    def test_props_2(self):
-        board = BOARDS[1]
-        self.helper_prop(board)
-
-    # x; passed
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
-    def test_props_3(self):
-        board = BOARDS[2]
-        self.helper_prop(board)
-
-    # x; passed
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
-    def test_props_4(self):
-        board = BOARDS[3]
-        self.helper_prop(board, prop_FI)
-
-    # x; failed due to abs woring implication
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS , "Not Testing Propagators and Encodings.")   
-    def test_props_5(self):
-        board = BOARDS[4]
-        self.helper_prop(board, prop_FI)
-
     # x; failed due to box cage not detected
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
-    def test_props_6(self):
-        board = BOARDS[5]
-        self.helper_prop(board, prop_FI)
-
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    def test_props_combined(self):
+        testrange = range(0, 6)
+        for i in testrange:
+            board = BOARDS[i]
+            self.helper_prop(board, prop_FC) # FC is very slow... ~20s
+    
     # xx
     ##Tests FC after the first queen is placed in position 1.
-    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
+    @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
     def test_simple_FC(self):
         queens = nQueens(8)
         curr_vars = queens.get_all_vars()
@@ -334,7 +311,7 @@ class TestStringMethods(unittest.TestCase):
             self.assertEqual(var_domain[i], answer[i], "Failed simple FC test: variable domains don't match expected results")
 
     # xx
-    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
+    @unittest.skipUnless(TEST_PROPAGATORS , "Not Testing Propagotors.")
     def test_DWO_FC(self):
         queens = nQueens(6)
         cur_var = queens.get_all_vars()
