@@ -78,6 +78,27 @@ BOARDS = [
         [62, 63, 5, 1],
         [65, 66, 5, 0],
     ],
+    [
+        [8],
+        [11, 12, 2, 2],
+        [13, 14, 23, 24, 14, 0],
+        [15, 25, 26, -6, 1],
+        [16, 17, 18, 27, 28, 37, 38, 47, 0],
+        [21, 22, 31, 41, 51, -9, 1],
+        [32, 42, 52, 13, 0],
+        [42, 3],
+        [33, 34, 43, 1, 2],
+        [35, 36, 45, 46, 47, 48, 94080, 3],
+        [44, 53, 54, 55, -1, 1],
+        [56, 57, 58, 68, 72, 3],
+        [61, 62, 63, 19, 0],
+        [64, 65, 75, 84, 85, 21, 0],
+        [75, 3],
+        [66, 67, 76, 77, 86, 48, 3],
+        [71, 81, 82, 83, -12, 1],
+        [72, 73, 74, 240, 3],
+        [78, 87, 88, 1, 2],
+    ],
 ]
 
 
@@ -221,6 +242,7 @@ TEST_BINARY_FC = True
 TEST_BINARY_FI = True
 TEST_NARY_FC = True
 TEST_NARY_FI = True
+TEST_EIGHT = True
 
 
 class TestStringMethods(unittest.TestCase):
@@ -578,6 +600,38 @@ class TestStringMethods(unittest.TestCase):
     )
     def test_props_9(self):
         board = BOARDS[2]
+        self.helper_prop(board, prop_FI)
+
+    # @unittest.skipUnless(TEST_EIGHT, "Not Testing 8x8 Grid.")
+    # def test_eight_1(self):
+    #     board = BOARDS[6]
+    #     self.helper_prop(board, prop_FI)
+
+    @unittest.skipUnless(
+        TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings."
+    )
+    def test_props_11(self):
+        board = [
+            [8],
+            [11, 12, 2, 2],
+            [13, 14, 23, 24, 14, 0],
+            [15, 25, 26, -6, 1],
+            [16, 17, 18, 27, 28, 37, 38, 47, 0],
+            [21, 22, 31, 41, 51, -9, 1],
+            [32, 42, 52, 13, 0],
+            [42, 3],
+            [33, 34, 43, 1, 2],
+            [35, 36, 45, 46, 47, 48, 94080, 3],
+            [44, 53, 54, 55, -1, 1],
+            [56, 57, 58, 68, 72, 3],
+            [61, 62, 63, 19, 0],
+            [64, 65, 75, 84, 85, 21, 0],
+            [75, 3],
+            [66, 67, 76, 77, 86, 48, 3],
+            [71, 81, 82, 83, -12, 1],
+            [72, 73, 74, 240, 3],
+            [78, 87, 88, 1, 2],
+        ]
         self.helper_prop(board, prop_FI)
 
     # @unittest.skipUnless(
