@@ -91,16 +91,18 @@ def nary_ad_grid(fpuzz_grid):
         row_vars = var_array[i]
         row_constraint = Constraint(f'Row-{i+1}-AllDiff', row_vars)
         # Generate and add satisfying tuples for the row constraint
-        row_constraint.add_satisfying_tuples(
-            [tuple for tuple in itertools.permutations(range(1, size + 1))])
+        satisfying_tuples = [tuple for tuple in itertools.permutations(range(1, size + 1))]
+        #print(f"row {i} sat:  ", satisfying_tuples)
+        row_constraint.add_satisfying_tuples(satisfying_tuples)
         csp.add_constraint(row_constraint)
 
     for j in range(size):
         col_vars = [var_array[i][j] for i in range(size)]
         col_constraint = Constraint(f'Col-{j+1}-AllDiff', col_vars)
         # Generate and add satisfying tuples for the column constraint
-        col_constraint.add_satisfying_tuples(
-            [tuple for tuple in itertools.permutations(range(1, size + 1))])
+        satisfying_tuples = [tuple for tuple in itertools.permutations(range(1, size + 1))]
+        #print(f"col {j} sat:  ", satisfying_tuples)
+        col_constraint.add_satisfying_tuples(satisfying_tuples)
         csp.add_constraint(col_constraint)
 
     return csp, var_array

@@ -7,17 +7,69 @@ from cspbase import *
 from puzzle_csp import *
 from propagators import *
 import propagators
+from test_board import TEST_BOARDS
+
 
 # Total 6 boards available for testing
 BOARDS = [ 
 [[3],[11,21,3,0],[12,22,2,1],[13,23,33,6,3],[31,32,5,0]],
 [[4],[11,21,6,3],[12,13,3,0],[14,24,3,1],[22,23,7,0],[31,32,2,2],[33,43,3,1],[34,44,6,3],[41,42,7,0]],
 [[5],[11,21,4,1],[12,13,2,2],[14,24,1,1],[15,25,1,1],[22,23,9,0],[31,32,3,1],[33,34,44,6,3],[35,45,9,0],[41,51,7,0],[42,43,3,1],[52,53,6,3],[54,55,4,1]],
+
 [[6],[11,21,11,0],[12,13,2,2],[14,24,20,3],[15,16,26,36,6,3],[22,23,3,1],[25,35,3,2],[31,32,41,42,240,3],[33,34,6,3],[43,53,6,3],[44,54,55,7,0],[45,46,30,3],[51,52,6,3],[56,66,9,0],[61,62,63,8,0],[64,65,2,2]],
 [[5],[11,12,21,22,10,0],[13,14,23,24,34,18,0],[15,25,35,2,1],[31,32,33,1,1],[41,42,43,51,52,53,600,3],[44,54,55,2,2],[45,3]], 
 [[6],[11,12,13,2,2],[14,15,3,1],[16,26,36,11,0],[21,22,23,2,2],[24,25,34,35,40,3],[31,41,51,61,14,0],[32,33,42,43,52,53,3600,3],[44,54,64,120,3],[45,46,55,56,1,1],[62,63,5,1],[65,66,5,0]],
-[[6],[11,12,13,13,0],[14,15,16,24,25,26,720,3],[21,31,41,51,-2,1],[22,23,33,43,120,3],[32,42,52,62,53,63,19,0],[51,61,3,1],[34,35,44,45,90,3],[36,46,56,55,54,18,0],[64,65,66,1,1]]
+
+[[6],[11,12,13,13,0],[14,15,16,24,25,26,720,3],[21,31,41,51,-2,1],[22,23,33,43,120,3],[32,42,52,62,53,63,19,0],[51,61,3,1],[34,35,44,45,90,3],[36,46,56,55,54,18,0],[64,65,66,1,1]],
+    [
+        [8],
+        [11, 12, 2, 2],
+        [13, 14, 23, 24, 14, 0],
+        [15, 25, 26, -6, 1],
+        [16, 17, 18, 27, 28, 37, 38, 47, 0],
+        [21, 22, 31, 41, 51, -9, 1],
+        [32, 42, 52, 13, 0],
+        [42, 3],
+        [33, 34, 43, 1, 2],
+        [35, 36, 45, 46, 47, 48, 94080, 3],
+        [44, 53, 54, 55, -1, 1],
+        [56, 57, 58, 68, 72, 3],
+        [61, 62, 63, 19, 0],
+        [64, 65, 75, 84, 85, 21, 0],
+        [75, 3],
+        [66, 67, 76, 77, 86, 48, 3],
+        [71, 81, 82, 83, -12, 1],
+        [72, 73, 74, 240, 3],
+        [78, 87, 88, 1, 2],
+    ],
+    
+    [
+        [8],
+        [
+            11, 12, 13, 14, 15, 16, 17, 18,
+            21, 22, 23, 24, 25, 26, 27, 28,
+            31, 32, 33, 34, 35, 36, 37, 38,
+            41, 42, 43, 44, 45, 46, 47, 48,
+            51, 52, 53, 54, 55, 56, 57, 58,
+            61, 62, 63, 64, 65, 66, 67, 68,
+            71, 72, 73, 74, 75, 76, 77, 78,
+            81, 82, 83, 84, 85, 86, 87, 88,
+            240, 0  # Sum target of 240 with addition operation
+        ]
 ]
+    
+]
+
+# Generating an 8x8 FunPuzz-style board with one cage constraint
+board_size = 8
+board = [[board_size]]  # First element is the size of the board
+# Adding a single cage constraint that spans the entire board
+# The constraint is that all numbers must sum up to a certain value, let's say 260 (random example)
+# The operation code for addition is '0'
+board.append([11 + i + 10*j for i in range(board_size) for j in range(board_size)] + [260, 0])
+
+# The board variable now represents an 8x8 FunPuzz board with a single cage constraint
+print(board)
 
 
 ## HELPER FUNCTIONS
@@ -151,10 +203,10 @@ def nQueens(n):
 # SPECIFY WHAT TO TEST
 TEST_ENCODINGS   = True
 TEST_PROPAGATORS = True
-TO_TEST = False
+TO_TEST = True
 
 class TestStringMethods(unittest.TestCase):
-    def helper_prop(self, board, prop=prop_FC):
+    def helper_prop(self, board, prop=prop_FI):
         csp, var_array = caged_csp(board)
         
         # Print the CSP attributes
@@ -193,7 +245,7 @@ class TestStringMethods(unittest.TestCase):
             print(' '.join(str(var.get_assigned_value()) if var.is_assigned() else '_' for var in row))
             
         # Print the CSP attributes
-        csp.print_all()  # Call the method to print CSP variables and constraints
+        #csp.print_all()  # Call the method to print CSP variables and constraints
         csp.print_soln()  # Call the method to print CSP solutions
 
         trace = False
@@ -210,7 +262,10 @@ class TestStringMethods(unittest.TestCase):
 
 
     def helper_nary_ad_grid(self, board):
-        new_b = list(board)
+        new_b = []
+        for sub_list in board:
+            new_b.append(list(sub_list))
+            
         csp, var_array = nary_ad_grid(new_b)
         
         # Expected number of all-different constraints (one per row and one per column)
@@ -232,25 +287,25 @@ class TestStringMethods(unittest.TestCase):
         # You can solve the CSP here and then print the variable assignments again to show the solution
 
         # Print the CSP attributes
-        csp.print_all()  # Call the method to print CSP variables and constraints
-        csp.print_soln()  # Call the method to print CSP solutions
+        #csp.print_all()  # Call the method to print CSP variables and constraints
+        #csp.print_soln()  # Call the method to print CSP solutions
         
         trace = False
         solver = BT(csp)
         if trace:
             solver.trace_on()
         #solver.bt_search(prop_BT)
-        solver.bt_search(prop_FC)
-        #solver.bt_search(prop_FI)
+        #solver.bt_search(prop_FC)
+        solver.bt_search(prop_FI)
 
         # Print the CSP attributes
         #csp.print_soln()  # Call the method to print CSP solutions
         csp.print_soln_board()  # Call the method to print CSP solutions in a board format
     
     # 1
-    @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
+    @unittest.skipUnless(TEST_ENCODINGS  & TO_TEST, "Not Testing Encodings.")
     def test_bne_grid_1(self):
-        board = BOARDS[0]
+        board = BOARDS[2]
         self.helper_bne_grid(board)
 
     # 2
@@ -270,7 +325,7 @@ class TestStringMethods(unittest.TestCase):
     def test_nary_ad_grid_1(self):
         board = BOARDS[0]
         self.helper_nary_ad_grid(board)
-        
+
     # 4
     @unittest.skipUnless(TEST_ENCODINGS & TO_TEST, "Not Testing Encodings.")
     def test_nary_ad_grid_all(self):
@@ -284,13 +339,13 @@ class TestStringMethods(unittest.TestCase):
             self.helper_nary_ad_grid(board)
     
     # x; passed
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS & TO_TEST, "Not Testing Propagators and Encodings.")
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS  & TO_TEST, "Not Testing Propagators and Encodings.")
     def test_props_1(self):
         board = BOARDS[0]
         self.helper_prop(board)
 
     # x; failed due to box cage not detected
-    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS, "Not Testing Propagators and Encodings.")
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_ENCODINGS , "Not Testing Propagators and Encodings.")
     def test_props_combined(self):
         testrange = range(0, 6)
         for i in testrange:
@@ -299,7 +354,7 @@ class TestStringMethods(unittest.TestCase):
     
     # xx
     ##Tests FC after the first queen is placed in position 1.
-    @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
+    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
     def test_simple_FC(self):
         queens = nQueens(8)
         curr_vars = queens.get_all_vars()
@@ -311,7 +366,7 @@ class TestStringMethods(unittest.TestCase):
             self.assertEqual(var_domain[i], answer[i], "Failed simple FC test: variable domains don't match expected results")
 
     # xx
-    @unittest.skipUnless(TEST_PROPAGATORS , "Not Testing Propagotors.")
+    @unittest.skipUnless(TEST_PROPAGATORS & TO_TEST, "Not Testing Propagotors.")
     def test_DWO_FC(self):
         queens = nQueens(6)
         cur_var = queens.get_all_vars()

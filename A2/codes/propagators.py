@@ -78,6 +78,12 @@ def prop_FC(csp, newVar=None):
     check all constraints for forward checking if newVar is None, or constraints containing newVar with exactly
     one uninstantiated variable in their scope, and prune appropriately.
     """
+    """
+    Following the handout implementation for FC does not work as fast as the lecture implementation,
+    since only check constraints that have exactly one uninstantiated variable in their scope 
+    is essentially like doing a plain backtracking
+    """
+    
     pruned = []  # Keep track of pruned values
     constraints_to_check = []
 
@@ -104,8 +110,38 @@ def prop_FC(csp, newVar=None):
                     if unassigned_var.cur_domain_size() == 0:
                         # Domain wipe out, fail immediately
                         return False, pruned
-
+    
     return True, pruned
+
+""" Following the lecture implementation for FC it works (fast enough) for all binary, nary, and caged encoding constraints
+def prop_FC(csp, newVar=None):
+    if newVar is None:
+        varQueue = [v for v in csp.get_all_vars() if not v.is_assigned()]
+    else:
+        varQueue = [newVar]
+
+    while varQueue:
+        W = varQueue.pop(0)
+        for C in csp.get_cons_with_var(W):
+            #if newVar is not None and C.get_n_unasgn() != 1:
+            #    # If checking constraints for a specific newVar, skip constraints with more than one unassigned variable
+            #    continue
+
+            for V in set(C.get_scope()) - {W}:
+                S = V.cur_domain()
+                for d in list(S):  # Make a copy of the current domain to iterate over
+                    if not C.has_support(V, d):
+                        V.prune_value(d)
+                        pruned.append((V, d))
+                        if V.cur_domain_size() == 0:
+                            # Domain wipe out, fail immediately
+                            return False, pruned
+                        elif V.cur_domain_size() == 1:
+                            # if V not already in queue
+                            if V not in varQueue:
+                                varQueue.append(V)
+    return True, pruned
+"""
 
 
 def prop_FI(csp, newVar=None):
@@ -136,4 +172,3 @@ def prop_FI(csp, newVar=None):
                                 varQueue.append(V)
 
     return True, pruned
-

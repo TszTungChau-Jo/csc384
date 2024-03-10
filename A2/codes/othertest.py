@@ -506,32 +506,32 @@ class TestStringMethods(unittest.TestCase):
     ###########################################################
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_1(self):
+    def test_nad_fi_1(self):
         board = BOARDS[0]
         self.helper_nad(board, prop=prop_FI)
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_2(self):
+    def test_nad_fi_2(self):
         board = BOARDS[1]
         self.helper_nad(board, prop=prop_FI)
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_3(self):
+    def test_nad_fi_3(self):
         board = BOARDS[2]
         self.helper_nad(board, prop=prop_FI)
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_4(self):
+    def test_nad_fi_4(self):
         board = BOARDS[3]
         self.helper_nad(board, prop=prop_FI)
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_5(self):
+    def test_nad_fi_5(self):
         board = BOARDS[4]
         self.helper_nad(board, prop=prop_FI)
 
     @unittest.skipUnless(TEST_NARY_FI, "Not testing N-ary Encoding with FI Propagator.")
-    def test_nad_fc_6(self):
+    def test_nad_fi_6(self):
         board = BOARDS[5]
         self.helper_nad(board, prop=prop_FI)
 
