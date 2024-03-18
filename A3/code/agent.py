@@ -12,26 +12,69 @@ from othello_shared import find_lines, get_possible_moves, get_score, play_move
 def eprint(*args, **kwargs): #you can use this for debugging, as it will print to sterr and not stdout
     print(*args, file=sys.stderr, **kwargs)
     
-# Method to compute utility value of terminal state
-def compute_utility(board, color):
-    #IMPLEMENT
-    return 0 #change this!
+# Method to compute utility value of terminal state; defined to be the number of hectares they own minus the number of hectares their competitor ow
+def compute_utility(board, current_player):
+    p1_score, p2_score = get_score(board)
+    return (p1_score - p2_score) if current_player == 1 else (p2_score - p1_score)
+
+# Method to check if the board is in a terminal state
+def is_terminal(board):
+    # Check if there are any legal moves for either player.
+    # Assuming players are represented by 1 and 2.
+    for player in [1, 2]:
+        if get_possible_moves(board, player):
+            # If either player can make a move, the board is not terminal.
+            return False
+    # If no legal moves are available for either player, the board is terminal.
+    return True
 
 # Better heuristic value of board
-def compute_heuristic(board, color): #not implemented, optional
+def compute_heuristic(board, current_player): #not implemented, optional
     #IMPLEMENT
     return 0 #change this!
 
-############ MINIMAX ###############################
-def minimax_min_node(board, color, limit, caching = 0):
-    #IMPLEMENT (and replace the line below)
-    return ((0,0),0)
+############ MINIMAX ############################### Ignore the limit, and caching parameters for now.
+def minimax_max_node(board, current_player, limit, caching = 0): #returns highest possible utility
+    # computes the utility assuming it is your turn to claim land
+    opponent = 2 if current_player == 1 else 1
+    
+    if is_terminal(board):  # Check if the game is over
+        return None, compute_utility(board, current_player)
 
-def minimax_max_node(board, color, limit, caching = 0): #returns highest possible utility
-    #IMPLEMENT (and replace the line below)
-    return ((0,0),0)
+    max_utility = float('-inf')
+    best_move = None
 
-def select_move_minimax(board, color, limit, caching = 0):
+    for move in get_possible_moves(board, current_player):
+        new_board = play_move(board, move, current_player)
+        _, utility = minimax_min_node(new_board, opponent, limit, caching)
+        
+        if utility > max_utility:
+            max_utility = utility
+            best_move = move
+
+    return best_move, max_utility
+
+def minimax_min_node(board, current_player, limit, caching = 0):
+    #  computes the utility assuming it is your opponent’s turn to claim lan
+    opponent = 2 if current_player == 1 else 1
+    
+    if is_terminal(board):  # Check if the game is over
+        return None, compute_utility(board, current_player)
+
+    min_utility = float('inf')
+    best_move = None
+
+    for move in get_possible_moves(board, current_player):
+        new_board = play_move(board, move, current_player)
+        _, utility = minimax_max_node(new_board, opponent, limit, caching)
+        
+        if utility < min_utility:
+            min_utility = utility
+            best_move = move
+
+    return best_move, min_utility
+
+def select_move_minimax(board, current_player, limit, caching = 0):
     """
     Given a board and a player color, decide on a move. 
     The return value is a tuple of integers (i,j), where
@@ -44,19 +87,22 @@ def select_move_minimax(board, color, limit, caching = 0):
     If caching is ON (i.e. 1), use state caching to reduce the number of state evaluations.
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
-    #IMPLEMENT (and replace the line below)
-    return (0,0) #change this!
+    best_move, _ = minimax_max_node(board, current_player, limit, caching)
+    return best_move
+
 
 ############ ALPHA-BETA PRUNING #####################
-def alphabeta_min_node(board, color, alpha, beta, limit, caching = 0, ordering = 0):
+def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
     #IMPLEMENT (and replace the line below)
+
     return ((0,0),0) #change this!
 
-def alphabeta_max_node(board, color, alpha, beta, limit, caching = 0, ordering = 0):
+def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
     #IMPLEMENT (and replace the line below)
+
     return ((0,0),0) #change this!
 
-def select_move_alphabeta(board, color, limit, caching = 0, ordering = 0):
+def select_move_alphabeta(board, current_player, limit, caching = 0, ordering = 0):
     """
     Given a board and a player color, decide on a move. 
     The return value is a tuple of integers (i,j), where
@@ -72,6 +118,7 @@ def select_move_alphabeta(board, color, limit, caching = 0, ordering = 0):
     If ordering is OFF (i.e. 0), do NOT use node ordering to expedite pruning and reduce the number of state evaluations. 
     """
     #IMPLEMENT (and replace the line below)
+
     return (0,0) #change this!
 
 ####################################################
