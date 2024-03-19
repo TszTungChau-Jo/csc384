@@ -44,14 +44,19 @@ def minimax_max_node(board, current_player, limit, caching = 0): #returns highes
     max_utility = float('-inf')
     best_move = None
 
+    #move = get_possible_moves(board, current_player)
+    #eprint(move)
+    
     for move in get_possible_moves(board, current_player):
-        new_board = play_move(board, move, current_player)
+        new_board = play_move(board, current_player, move[0], move[1])
+        #eprint(new_board)
         _, utility = minimax_min_node(new_board, opponent, limit, caching)
         
         if utility > max_utility:
             max_utility = utility
             best_move = move
-
+    
+    #eprint("what2:",move)
     return best_move, max_utility
 
 def minimax_min_node(board, current_player, limit, caching = 0):
@@ -63,9 +68,12 @@ def minimax_min_node(board, current_player, limit, caching = 0):
 
     min_utility = float('inf')
     best_move = None
+    
+    #move = get_possible_moves(board, current_player)
+    #eprint(move)
 
     for move in get_possible_moves(board, current_player):
-        new_board = play_move(board, move, current_player)
+        new_board = play_move(board, current_player, move[0], move[1])
         _, utility = minimax_max_node(new_board, opponent, limit, caching)
         
         if utility < min_utility:
@@ -88,6 +96,7 @@ def select_move_minimax(board, current_player, limit, caching = 0):
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
     best_move, _ = minimax_max_node(board, current_player, limit, caching)
+    eprint(best_move)
     return best_move
 
 
