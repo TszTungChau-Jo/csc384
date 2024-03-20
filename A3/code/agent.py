@@ -17,15 +17,10 @@ def compute_utility(board, current_player):
     p1_score, p2_score = get_score(board)
     return (p1_score - p2_score) if current_player == 1 else (p2_score - p1_score)
 
-# Method to check if the board is in a terminal state
-def is_terminal(board):
-    # Check if there are any legal moves for either player.
-    # Assuming players are represented by 1 and 2.
-    for player in [1, 2]:
-        if get_possible_moves(board, player):
-            # If either player can make a move, the board is not terminal.
-            return False
-    # If no legal moves are available for either player, the board is terminal.
+# Method to check if the current player have any possible move
+def is_no_more_move(board, current_player):
+    if get_possible_moves(board, current_player):
+        return False
     return True
 
 # Better heuristic value of board
@@ -36,50 +31,42 @@ def compute_heuristic(board, current_player): #not implemented, optional
 ############ MINIMAX ############################### Ignore the limit, and caching parameters for now.
 def minimax_max_node(board, current_player, limit, caching = 0): #returns highest possible utility
     # computes the utility assuming it is your turn to claim land
-    opponent = 2 if current_player == 1 else 1
-    
-    if is_terminal(board):  # Check if the game is over
-        return None, compute_utility(board, current_player)
 
     max_utility = float('-inf')
     best_move = None
+    possible_moves = get_possible_moves(board, current_player)
 
-    #move = get_possible_moves(board, current_player)
-    #eprint(move)
+    if is_no_more_move(board, current_player):  # Check if the game is over
+        return None, compute_utility(board, current_player)
     
-    for move in get_possible_moves(board, current_player):
+    for move in possible_moves:
         new_board = play_move(board, current_player, move[0], move[1])
         #eprint(new_board)
-        _, utility = minimax_min_node(new_board, opponent, limit, caching)
+        _, utility = minimax_min_node(new_board, current_player, limit, caching)
         
         if utility > max_utility:
             max_utility = utility
             best_move = move
-    
-    #eprint("what2:",move)
     return best_move, max_utility
 
 def minimax_min_node(board, current_player, limit, caching = 0):
     #  computes the utility assuming it is your opponent’s turn to claim lan
     opponent = 2 if current_player == 1 else 1
     
-    if is_terminal(board):  # Check if the game is over
-        return None, compute_utility(board, current_player)
-
     min_utility = float('inf')
     best_move = None
-    
-    #move = get_possible_moves(board, current_player)
-    #eprint(move)
+    possible_moves = get_possible_moves(board, opponent)
 
-    for move in get_possible_moves(board, current_player):
-        new_board = play_move(board, current_player, move[0], move[1])
-        _, utility = minimax_max_node(new_board, opponent, limit, caching)
+    if is_no_more_move(board, opponent):  # Check if the game is over
+        return None, compute_utility(board, current_player)
+
+    for move in possible_moves:
+        new_board = play_move(board, opponent, move[0], move[1])
+        _, utility = minimax_max_node(new_board, current_player, limit, caching)
         
         if utility < min_utility:
             min_utility = utility
             best_move = move
-
     return best_move, min_utility
 
 def select_move_minimax(board, current_player, limit, caching = 0):
@@ -96,7 +83,6 @@ def select_move_minimax(board, current_player, limit, caching = 0):
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
     best_move, _ = minimax_max_node(board, current_player, limit, caching)
-    eprint(best_move)
     return best_move
 
 
@@ -183,6 +169,7 @@ def run_ai():
             # Select the move and send it to the manager
             if (minimax == 1): #run this if the minimax flag is given
                 movei, movej = select_move_minimax(board, color, limit, caching)
+                #eprint("movei: ", movei, "movej: ", movej)
             else: #else run alphabeta
                 movei, movej = select_move_alphabeta(board, color, limit, caching, ordering)
             
