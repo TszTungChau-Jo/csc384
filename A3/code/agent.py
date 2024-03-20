@@ -17,11 +17,6 @@ def compute_utility(board, current_player):
     p1_score, p2_score = get_score(board)
     return (p1_score - p2_score) if current_player == 1 else (p2_score - p1_score)
 
-# Method to check if the current player have any possible move
-def is_no_more_move(board, current_player):
-    if get_possible_moves(board, current_player):
-        return False
-    return True
 
 # Better heuristic value of board
 def compute_heuristic(board, current_player): #not implemented, optional
@@ -36,7 +31,7 @@ def minimax_max_node(board, current_player, limit, caching = 0): #returns highes
     best_move = None
     possible_moves = get_possible_moves(board, current_player)
 
-    if is_no_more_move(board, current_player):  # Check if the game is over
+    if len(possible_moves) == 0:  # Check if the game is over
         return None, compute_utility(board, current_player)
     
     for move in possible_moves:
@@ -57,7 +52,7 @@ def minimax_min_node(board, current_player, limit, caching = 0):
     best_move = None
     possible_moves = get_possible_moves(board, opponent)
 
-    if is_no_more_move(board, opponent):  # Check if the game is over
+    if len(possible_moves) == 0:  # Check if the game is over
         return None, compute_utility(board, current_player)
 
     for move in possible_moves:
