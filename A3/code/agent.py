@@ -82,15 +82,57 @@ def select_move_minimax(board, current_player, limit, caching = 0):
 
 
 ############ ALPHA-BETA PRUNING #####################
-def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
-    #IMPLEMENT (and replace the line below)
-
-    return ((0,0),0) #change this!
-
 def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
-    #IMPLEMENT (and replace the line below)
+    # computes the utility assuming it is your turn to claim land
 
-    return ((0,0),0) #change this!
+    max_utility = float('-inf')
+    best_move = None
+    possible_moves = get_possible_moves(board, current_player)
+    #eprint("inside max", alpha, beta)
+
+    if len(possible_moves) == 0:  # Check if the game is over
+        return None, compute_utility(board, current_player)
+    
+    for move in possible_moves:
+        new_board = play_move(board, current_player, move[0], move[1])
+        #eprint(new_board)
+        _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit)
+        
+        if utility > max_utility:
+            max_utility = utility
+            best_move = move
+        
+        alpha = max(alpha, utility)
+        if beta <= alpha:
+            break
+    
+    return best_move, max_utility
+
+def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
+    #  computes the utility assuming it is your opponent’s turn to claim lan
+    opponent = 2 if current_player == 1 else 1
+    
+    min_utility = float('inf')
+    best_move = None
+    possible_moves = get_possible_moves(board, opponent)
+    #eprint("inside min", alpha, beta)
+
+    if len(possible_moves) == 0:  # Check if the game is over
+        return None, compute_utility(board, current_player)
+
+    for move in possible_moves:
+        new_board = play_move(board, opponent, move[0], move[1])
+        _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit)
+        
+        if utility < min_utility:
+            min_utility = utility
+            best_move = move
+        
+        beta = min(beta, utility)
+        if beta <= alpha:
+            break
+
+    return best_move, min_utility
 
 def select_move_alphabeta(board, current_player, limit, caching = 0, ordering = 0):
     """
@@ -107,9 +149,10 @@ def select_move_alphabeta(board, current_player, limit, caching = 0, ordering = 
     If ordering is ON (i.e. 1), use node ordering to expedite pruning and reduce the number of state evaluations. 
     If ordering is OFF (i.e. 0), do NOT use node ordering to expedite pruning and reduce the number of state evaluations. 
     """
-    #IMPLEMENT (and replace the line below)
-
-    return (0,0) #change this!
+    pos_infty = float('inf')
+    neg_infty = float('-inf')
+    best_move, _ = alphabeta_max_node(board, current_player, neg_infty, pos_infty, limit)
+    return best_move
 
 ####################################################
 def run_ai():
