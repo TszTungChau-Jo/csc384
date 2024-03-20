@@ -31,13 +31,13 @@ def minimax_max_node(board, current_player, limit, caching = 0): #returns highes
     best_move = None
     possible_moves = get_possible_moves(board, current_player)
 
-    if len(possible_moves) == 0:  # Check if the game is over
+    if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
         return None, compute_utility(board, current_player)
     
     for move in possible_moves:
         new_board = play_move(board, current_player, move[0], move[1])
         #eprint(new_board)
-        _, utility = minimax_min_node(new_board, current_player, limit, caching)
+        _, utility = minimax_min_node(new_board, current_player, limit-1)
         
         if utility > max_utility:
             max_utility = utility
@@ -52,12 +52,12 @@ def minimax_min_node(board, current_player, limit, caching = 0):
     best_move = None
     possible_moves = get_possible_moves(board, opponent)
 
-    if len(possible_moves) == 0:  # Check if the game is over
+    if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
         return None, compute_utility(board, current_player)
 
     for move in possible_moves:
         new_board = play_move(board, opponent, move[0], move[1])
-        _, utility = minimax_max_node(new_board, current_player, limit, caching)
+        _, utility = minimax_max_node(new_board, current_player, limit-1)
         
         if utility < min_utility:
             min_utility = utility
@@ -90,13 +90,13 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
     possible_moves = get_possible_moves(board, current_player)
     #eprint("inside max", alpha, beta)
 
-    if len(possible_moves) == 0:  # Check if the game is over
+    if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
         return None, compute_utility(board, current_player)
     
     for move in possible_moves:
         new_board = play_move(board, current_player, move[0], move[1])
         #eprint(new_board)
-        _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit)
+        _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit-1)
         
         if utility > max_utility:
             max_utility = utility
@@ -117,12 +117,12 @@ def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, o
     possible_moves = get_possible_moves(board, opponent)
     #eprint("inside min", alpha, beta)
 
-    if len(possible_moves) == 0:  # Check if the game is over
+    if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
         return None, compute_utility(board, current_player)
 
     for move in possible_moves:
         new_board = play_move(board, opponent, move[0], move[1])
-        _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit)
+        _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit-1)
         
         if utility < min_utility:
             min_utility = utility
