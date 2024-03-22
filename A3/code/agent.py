@@ -19,14 +19,26 @@ def compute_utility(board, current_player):
 
 
 # Better heuristic value of board
-def compute_heuristic(board, current_player): #not implemented, optional
+def compute_heuristic(board, current_player):
     #IMPLEMENT
     return 0 #change this!
 
+############ OPTIMIZATION ###############
+cached_states = {}
+
 ############ MINIMAX ############################### Ignore the limit, and caching parameters for now.
 def minimax_max_node(board, current_player, limit, caching = 0): #returns highest possible utility
+    global cached_states
+    
+    # Generate a unique key for the current state and player
+    state_key = (str(board), current_player)
+    
+    # Check if the state is in the cache
+    if caching and (state_key in cached_states):
+        return cached_states[state_key]
+    #eprint("cached ", cached_states) # working
+    
     # computes the utility assuming it is your turn to claim land
-
     max_utility = float('-inf')
     best_move = None
     possible_moves = get_possible_moves(board, current_player)
@@ -37,14 +49,29 @@ def minimax_max_node(board, current_player, limit, caching = 0): #returns highes
     for move in possible_moves:
         new_board = play_move(board, current_player, move[0], move[1])
         #eprint(new_board)
-        _, utility = minimax_min_node(new_board, current_player, limit-1)
+        _, utility = minimax_min_node(new_board, current_player, limit-1, caching)
         
         if utility > max_utility:
             max_utility = utility
             best_move = move
+            
+    # Cache the computed utility value before returning
+    if caching:
+        cached_states[state_key] = (best_move, max_utility)
+    
     return best_move, max_utility
 
 def minimax_min_node(board, current_player, limit, caching = 0):
+    global cached_states
+    
+    # Generate a unique key for the current state and player
+    state_key = (str(board), current_player)
+    
+    # Check if the state is in the cache
+    if caching and (state_key in cached_states):
+        return cached_states[state_key]
+    #eprint("cached ", cached_states) # working
+    
     #  computes the utility assuming it is your opponent’s turn to claim lan
     opponent = 2 if current_player == 1 else 1
     
@@ -57,11 +84,16 @@ def minimax_min_node(board, current_player, limit, caching = 0):
 
     for move in possible_moves:
         new_board = play_move(board, opponent, move[0], move[1])
-        _, utility = minimax_max_node(new_board, current_player, limit-1)
+        _, utility = minimax_max_node(new_board, current_player, limit-1, caching)
         
         if utility < min_utility:
             min_utility = utility
             best_move = move
+    
+    # Cache the computed utility value before returning
+    if caching:
+        cached_states[state_key] = (best_move, min_utility)
+    
     return best_move, min_utility
 
 def select_move_minimax(board, current_player, limit, caching = 0):
@@ -77,17 +109,49 @@ def select_move_minimax(board, current_player, limit, caching = 0):
     If caching is ON (i.e. 1), use state caching to reduce the number of state evaluations.
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
+    cached_states.clear()
     best_move, _ = minimax_max_node(board, current_player, limit, caching)
     return best_move
 
+######################## ORDERING ###############################
+def sort_moves_by_utility(board, possible_moves, current_player, ordering, reverse_flag):
+    if not ordering:
+        return possible_moves  # Return the original list if ordering is not enabled
+
+    def utility_value(move):
+        new_board = play_move(board, current_player, move[0], move[1])
+        return compute_utility(new_board, current_player)
+
+    # Sort the moves based on the utility value
+    sorted_moves = sorted(possible_moves, key=utility_value, reverse=reverse_flag)
+    return sorted_moves
 
 ############ ALPHA-BETA PRUNING #####################
 def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
-    # computes the utility assuming it is your turn to claim land
+    global cached_states
+    
+    # Generate a unique key for the current state and player
+    state_key = (str(board), current_player)
+    
+    # Check if the state is in the cache
+    if caching and (state_key in cached_states):
+        return cached_states[state_key]
+    #eprint("cached ", cached_states) # right caching works
 
+    # computes the utility assuming it is your turn to claim land
     max_utility = float('-inf')
     best_move = None
+    
     possible_moves = get_possible_moves(board, current_player)
+    #utilities = [compute_utility(play_move(board, current_player, move[0], move[1]), current_player) for move in possible_moves]
+    #eprint(utilities)
+    #eprint("possible_moves", possible_moves)
+    # Use the helper function to sort moves by utility
+    reverse = True # in descending order
+    possible_moves = sort_moves_by_utility(board, possible_moves, current_player, ordering, reverse)
+    #utilities = [compute_utility(play_move(board, current_player, move[0], move[1]), current_player) for move in possible_moves]
+    #eprint(utilities)
+    #eprint("sorted_moves  ", possible_moves)
     #eprint("inside max", alpha, beta)
 
     if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
@@ -96,7 +160,7 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
     for move in possible_moves:
         new_board = play_move(board, current_player, move[0], move[1])
         #eprint(new_board)
-        _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit-1)
+        _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit-1, caching, ordering)
         
         if utility > max_utility:
             max_utility = utility
@@ -106,15 +170,33 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
         if beta <= alpha:
             break
     
+    # Cache the computed utility value before returning
+    if caching:
+        cached_states[state_key] = (best_move, max_utility)
+    
     return best_move, max_utility
 
 def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
+    global cached_states
+    
+    # Generate a unique key for the current state and player
+    state_key = (str(board), current_player)
+    
+    # Check if the state is in the cache
+    if caching and (state_key in cached_states):
+        return cached_states[state_key]
+    
     #  computes the utility assuming it is your opponent’s turn to claim lan
     opponent = 2 if current_player == 1 else 1
     
     min_utility = float('inf')
     best_move = None
+    
     possible_moves = get_possible_moves(board, opponent)
+    #eprint("possible_moves", possible_moves)
+    reverse = False # in ascending order
+    possible_moves = sort_moves_by_utility(board, possible_moves, opponent, ordering, reverse)
+    #eprint("sorted_moves  ", possible_moves)
     #eprint("inside min", alpha, beta)
 
     if len(possible_moves) == 0 or (limit == 0):  # Check if the game is over
@@ -122,7 +204,7 @@ def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, o
 
     for move in possible_moves:
         new_board = play_move(board, opponent, move[0], move[1])
-        _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit-1)
+        _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit-1, caching, ordering)
         
         if utility < min_utility:
             min_utility = utility
@@ -131,7 +213,11 @@ def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, o
         beta = min(beta, utility)
         if beta <= alpha:
             break
-
+    
+    # Cache the computed utility value before returning
+    if caching:
+        cached_states[state_key] = (best_move, min_utility)
+    
     return best_move, min_utility
 
 def select_move_alphabeta(board, current_player, limit, caching = 0, ordering = 0):
@@ -149,9 +235,10 @@ def select_move_alphabeta(board, current_player, limit, caching = 0, ordering = 
     If ordering is ON (i.e. 1), use node ordering to expedite pruning and reduce the number of state evaluations. 
     If ordering is OFF (i.e. 0), do NOT use node ordering to expedite pruning and reduce the number of state evaluations. 
     """
+    #cached_states.clear()
     pos_infty = float('inf')
     neg_infty = float('-inf')
-    best_move, _ = alphabeta_max_node(board, current_player, neg_infty, pos_infty, limit)
+    best_move, _ = alphabeta_max_node(board, current_player, neg_infty, pos_infty, limit, caching, ordering)
     return best_move
 
 ####################################################
@@ -215,3 +302,4 @@ def run_ai():
 
 if __name__ == "__main__":
     run_ai()
+    
