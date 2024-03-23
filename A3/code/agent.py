@@ -17,11 +17,54 @@ def compute_utility(board, current_player):
     p1_score, p2_score = get_score(board)
     return (p1_score - p2_score) if current_player == 1 else (p2_score - p1_score)
 
+def create_weight_matrix(size):
+    # You can adjust these weights and expand the pattern for larger boards
+    corner_weight = 100
+    edge_weight = 10
+    adjacent_corner_weight = -20
+    inner_weight = 0
+
+    # Initialize all weights to inner_weight first
+    weights = [[inner_weight for _ in range(size)] for _ in range(size)]
+
+    # Corners
+    weights[0][0] = corner_weight
+    weights[0][size-1] = corner_weight
+    weights[size-1][0] = corner_weight
+    weights[size-1][size-1] = corner_weight
+
+    # Edges
+    for i in range(1, size-1):
+        weights[0][i] = edge_weight  # Top edge
+        weights[i][0] = edge_weight  # Left edge
+        weights[size-1][i] = edge_weight  # Bottom edge
+        weights[i][size-1] = edge_weight  # Right edge
+
+    # Adjacent to corners
+    if size > 2:  # Adjacent corner weights are only relevant for boards larger than 2x2
+        weights[1][0] = weights[0][1] = adjacent_corner_weight
+        weights[1][size-1] = weights[0][size-2] = adjacent_corner_weight
+        weights[size-2][0] = weights[size-1][1] = adjacent_corner_weight
+        weights[size-2][size-1] = weights[size-1][size-2] = adjacent_corner_weight
+
+    # The rest of the positions will keep the inner_weight.
+
+    return weights
 
 # Better heuristic value of board
 def compute_heuristic(board, current_player):
-    #IMPLEMENT
-    return 0 #change this!
+    board_size = len(board)
+    weight_matrix = create_weight_matrix(board_size)
+    utility = 0
+
+    for i in range(board_size):
+        for j in range(board_size):
+            if board[i][j] == current_player:
+                utility += weight_matrix[i][j]
+            elif board[i][j] != 0:  # Assuming '0' is an empty space
+                utility -= weight_matrix[i][j]
+
+    return utility
 
 ############ OPTIMIZATION ###############
 cached_states = {}
@@ -54,7 +97,7 @@ def minimax_max_node(board, current_player, limit, caching = 0): #returns highes
         if utility > max_utility:
             max_utility = utility
             best_move = move
-            
+
     # Cache the computed utility value before returning
     if caching:
         cached_states[state_key] = (best_move, max_utility)
@@ -89,7 +132,7 @@ def minimax_min_node(board, current_player, limit, caching = 0):
         if utility < min_utility:
             min_utility = utility
             best_move = move
-    
+
     # Cache the computed utility value before returning
     if caching:
         cached_states[state_key] = (best_move, min_utility)
@@ -141,7 +184,7 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
     # computes the utility assuming it is your turn to claim land
     max_utility = float('-inf')
     best_move = None
-    
+
     possible_moves = get_possible_moves(board, current_player)
     #utilities = [compute_utility(play_move(board, current_player, move[0], move[1]), current_player) for move in possible_moves]
     #eprint(utilities)
@@ -169,11 +212,11 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
         alpha = max(alpha, utility)
         if beta <= alpha:
             break
-    
+
     # Cache the computed utility value before returning
     if caching:
         cached_states[state_key] = (best_move, max_utility)
-    
+
     return best_move, max_utility
 
 def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):
