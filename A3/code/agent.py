@@ -25,7 +25,7 @@ def create_weight_matrix(size):
     corner_weight = 100
     edge_weight = 10
     adjacent_corner_weight = -20
-    inner_weight = 0
+    inner_weight = 2
 
     # Initialize all weights to inner_weight first
     weights = [[inner_weight for _ in range(size)] for _ in range(size)]
@@ -155,7 +155,7 @@ def select_move_minimax(board, current_player, limit, caching = 0):
 
 ############### ORDERING ###############
 def sort_moves_by_utility(board, possible_moves, current_player, reverse_flag):
-    # Generate a list of tuples with (move, utility)
+    # Generate a list of tuples with (move, utility) --> stays with compute_utility 
     move_utilities = [(move, compute_utility(play_move(board, current_player, move[0], move[1]), current_player)) for move in possible_moves]
 
     # Sort the list of tuples based on utility, which is the second item in each tuple
@@ -170,8 +170,8 @@ def sort_moves_by_utility(board, possible_moves, current_player, reverse_flag):
 def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):    
     # Check if the state is in the cache
     global cached_states
-    if caching and (board in cached_states):
-        return cached_states[board]
+    if caching and (board, current_player, alpha, beta) in cached_states:
+        return cached_states[(board, current_player, alpha, beta)]
 
     max_utility = float('-inf')
     best_move = None
@@ -188,7 +188,7 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
         _, utility = alphabeta_min_node(new_board, current_player, alpha, beta, limit-1, caching, ordering)
         
         if caching:
-            cached_states[new_board] = (move, utility)
+            cached_states[(new_board, current_player, alpha, beta)] = (move, utility)
         
         if utility > max_utility:
             max_utility = utility
@@ -201,13 +201,13 @@ def alphabeta_max_node(board, current_player, alpha, beta, limit, caching = 0, o
     return best_move, max_utility
 
 def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, ordering = 0):    
-    # Computes the utility assuming it is your opponent’s turn to claim lan
+    # Computes the utility assuming it is your opponent’s turn to claim land
     opponent = 2 if current_player == 1 else 1
     
     # Check if the state is in the cache
     global cached_states
-    if caching and (board in cached_states):
-        return cached_states[board]
+    if caching and (board, current_player, alpha, beta) in cached_states:
+        return cached_states[(board, current_player, alpha, beta)]
 
     min_utility = float('inf')
     best_move = None
@@ -224,7 +224,7 @@ def alphabeta_min_node(board, current_player, alpha, beta, limit, caching = 0, o
         _, utility = alphabeta_max_node(new_board, current_player, alpha, beta, limit-1, caching, ordering)
         
         if caching:
-            cached_states[new_board] = (move, utility)
+            cached_states[(new_board, current_player, alpha, beta)] = (move, utility)
         
         if utility < min_utility:
             min_utility = utility
@@ -307,13 +307,15 @@ def run_ai():
                                   # 0 : empty square
                                   # 1 : dark disk (player 1)
                                   # 2 : light disk (player 2)
-
+            #eprint("board ", board) --> input is a board in form of lists of list
+            tuple_of_tuples = tuple(tuple(inner_list) for inner_list in board)
+            #eprint("tuple_of_tuples ", tuple_of_tuples) --> needs to be in form of tuple of tuples
             # Select the move and send it to the manager
             if (minimax == 1): #run this if the minimax flag is given
-                movei, movej = select_move_minimax(board, color, limit, caching)
+                movei, movej = select_move_minimax(tuple_of_tuples, color, limit, caching)
                 #eprint("movei: ", movei, "movej: ", movej)
             else: #else run alphabeta
-                movei, movej = select_move_alphabeta(board, color, limit, caching, ordering)
+                movei, movej = select_move_alphabeta(tuple_of_tuples, color, limit, caching, ordering)
             
             print("{} {}".format(movei, movej))
 
